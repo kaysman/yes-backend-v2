@@ -1,0 +1,177 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleType {
+  ADMIN
+  BUSINESS_USER
+  END_USER
+}
+
+enum GenderType {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum FilterType {
+  COLOR
+  GENDER
+  SIZE
+}
+
+model Market {
+  id          Int      @id @default(autoincrement())
+  title       String
+  logo        String?
+  address     String?
+  description String?
+  phoneNumber String
+  ownerName   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  Product Product[]
+}
+
+model Category {
+  id             Int        @id @default(autoincrement())
+  title_tm       String
+  title_ru       String?
+  description_tm String?
+  description_ru String?
+  subcategories  Category[] @relation("CategorySubcategories")
+  parent         Category?  @relation("CategorySubcategories", fields: [parentId], references: [id])
+  parentId       Int?       @map("categoryId")
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  menuCategory            MenuCategory[]
+  homeSquareSizedCategory HomeSquareSizedCategory[]
+  categoryToBag           CategoryToBag[]
+  product                 Product[]
+}
+
+model MenuCategory {
+  id             Int      @id @default(autoincrement())
+  categoryId     Int
+  category       Category @relation(fields: [categoryId], references: [id])
+  backroundImage String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+}
+
+model HomeSquareSizedCategory {
+  id             Int      @id @default(autoincrement())
+  categoryId     Int
+  category       Category @relation(fields: [categoryId], references: [id])
+  backroundImage String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model CategoryToBag {
+  id             Int      @id @default(autoincrement())
+  categoryId     Int
+  category       Category @relation(fields: [categoryId], references: [id])
+  backroundImage String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Brand {
+  id        Int      @id @default(autoincrement())
+  name      String
+  vip       Boolean  @default(false)
+  logo      String
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product[]
+}
+
+model Promotion {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Budget {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id          Int         @id @default(autoincrement())
+  phoneNumber String
+  password    String
+  name        String?
+  address     String
+  gender      GenderType?
+  role        RoleType    @default(END_USER)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+}
+
+model Product {
+  id             Int     @id @default(autoincrement())
+  name_tm        String
+  name_ru        String
+  price          String
+  color_id       Int
+  gender_id      Int
+  quantity       Int     @default(0)
+  code           String
+  description_tm String?
+  description_ru String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  brand_id Int
+  brand    Brand @relation(fields: [brand_id], references: [id], onDelete: Cascade)
+
+  category_id Int
+  category    Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
+
+  market_id Int
+  market    Market @relation(fields: [market_id], references: [id], onDelete: Cascade)
+
+  product_Images Product_Images[]
+}
+
+model Filter {
+  id      Int        @id @default(autoincrement())
+  name_tm String
+  name_ru String
+  type    FilterType
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Product_Images {
+  id      Int        @id @default(autoincrement())
+  image String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  productId Int 
+  product Product @relation(fields: [productId],references: [id], onDelete: Cascade)
+
+}
