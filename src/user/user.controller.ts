@@ -1,3 +1,5 @@
+import { writeWebpFile } from 'src/shared/helper';
+
 import {
   Body,
   Controller,
@@ -5,6 +7,7 @@ import {
   Post,
 } from '@nestjs/common';
 
+import { UploadImageDTO } from './dto';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { GetUserByPhoneNumberDTO } from './dto/get-user-phone.dto';
 import { UserService } from './user.service';
@@ -21,5 +24,11 @@ export class UserController {
   @Get()
   async getUserByphone(@Body() dto: GetUserByPhoneNumberDTO){
     return await this.userService.getUserByPhoneNumber(dto)
+  }
+
+  @Post('upload/image')
+  async uploadImage65(@Body() dto: UploadImageDTO){
+    
+    return writeWebpFile(dto.image, 'photo');
   }
 }

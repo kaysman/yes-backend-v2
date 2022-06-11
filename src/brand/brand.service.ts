@@ -1,4 +1,8 @@
 import { PrismaService } from 'src/prisma/prisma.service';
+import {
+  getImagePath,
+  writeWebpFile,
+} from 'src/shared/helper';
 
 import {
   BadRequestException,
@@ -50,6 +54,12 @@ export class BrandService {
             image: dto.image,
           },
         });
+
+        if (dto.image) {
+          var brandName = dto.name;
+          await writeWebpFile(dto.image, brandName);
+        }
+        newBrand.image = getImagePath(brandName);
         return newBrand;
       } else return new BadRequestException('brand already exists');
     } catch (error) {

@@ -10,7 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 
-import { CreateProductDTO } from './dto/craete-product.dto';
+import { CreateProductDTO } from './dto/create-product.dto';
 import { FilterForProductDTO } from './dto/filter-for-product.dto';
 import { ProductService } from './product.service';
 

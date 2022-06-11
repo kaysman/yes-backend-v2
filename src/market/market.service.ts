@@ -1,4 +1,8 @@
 import { PrismaService } from 'src/prisma/prisma.service';
+import {
+  getImagePath,
+  writeWebpFile,
+} from 'src/shared/helper';
 
 import {
   ForbiddenException,
@@ -45,6 +49,12 @@ export class MarketService {
         var newMarket = await this.prisma.market.create({
           data: { ...dto },
         });
+
+        if (dto.logo) {
+          var marketName = dto.title;
+          await writeWebpFile(dto.logo, marketName);
+        }
+        newMarket.logo = getImagePath(marketName);
         return newMarket;
       } else return new ForbiddenException('market already exists');
     } catch (error) {

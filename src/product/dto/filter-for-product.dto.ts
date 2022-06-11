@@ -69,4 +69,9 @@ export class FilterForProductDTO {
   @IsNumber()
   @Type(() => Number)
   market_id?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  size_id: number
 }

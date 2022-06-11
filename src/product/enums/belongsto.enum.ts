@@ -4,6 +4,6 @@ export enum ProductBelongsToType {
     CATEGORY = "CATEGORY",
     COLOR = "COLOR",
     GENDER = "GENDER",
-    // SIZE
+    SIZE = "SIZE",
     ALL = "ALL",
 }

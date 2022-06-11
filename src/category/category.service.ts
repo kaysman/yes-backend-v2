@@ -51,7 +51,6 @@ export class CategoryService {
             parentId: Number(dto.parentId),
           },
         });
-
         return newCategory;
       } else {
         throw new BadRequestException();

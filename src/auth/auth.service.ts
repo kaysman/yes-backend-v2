@@ -1,6 +1,10 @@
 import * as argon from 'argon2';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { hashString } from 'src/shared/helper';
+import {
+  getImagePath,
+  hashString,
+  writeWebpFile,
+} from 'src/shared/helper';
 import {
   CreateUserDTO,
   LoginDTO,
@@ -18,28 +22,60 @@ import { JwtPayload } from './jwt/jwt-payload.dto';
 export class AuthService {
     constructor(private prisma: PrismaService, private jwtService: JwtService) {}
 
-    async signup(createUserDTO: CreateUserDTO) {
-        try {
-          var user = await this.prisma.user.findFirst({
-            where: {
-              phoneNumber: createUserDTO.phoneNumber,
+    async signup(dto: CreateUserDTO) {
+      try {
+        var checkUser = await this.prisma.user.findFirst({
+          where: {
+            phoneNumber: dto.phoneNumber,
+          },
+        });
+        if (!checkUser) {
+          var hashedPassword = await hashString(dto.password);
+          dto.password = hashedPassword;
+
+          var newUser = await this.prisma.user.create({
+            data: {
+              name: dto.name,
+              phoneNumber: dto.phoneNumber,
+              password: dto.password, // TODO: hash password before save.
+              address: dto.address,
+              gender: dto.gender,
+              role: dto.role,
             },
           });
-    
-          if (!user) {
-            var hashedPassword = await hashString(createUserDTO.password);
-            createUserDTO.password = hashedPassword;
-            var newUser = await this.prisma.user.create({
-              data: createUserDTO,
-            });
-    
-            return newUser;
-          } else {
-            throw new ForbiddenException('User already taken');
+          if (dto.image) {
+            var fileName = dto.phoneNumber;
+            await writeWebpFile(dto.image, fileName);
           }
-        } catch (error) {
-          throw error;
+
+          newUser.image = getImagePath(dto.phoneNumber);
+          delete newUser.password;        
+          return newUser;
         }
+      } catch (error) {
+        throw error;
+      }
+        // try {
+        //   var user = await this.prisma.user.findFirst({
+        //     where: {
+        //       phoneNumber: createUserDTO.phoneNumber,
+        //     },
+        //   });
+    
+        //   if (!user) {
+        //     var hashedPassword = await hashString(createUserDTO.password);
+        //     createUserDTO.password = hashedPassword;
+        //     var newUser = await this.prisma.user.create({
+        //       data: createUserDTO,
+        //     });
+    
+        //     return newUser;
+        //   } else {
+        //     throw new ForbiddenException('User already taken');
+        //   }
+        // } catch (error) {
+        //   throw error;
+        // }
       }
     
       async signin(logindDto: LoginDTO) {

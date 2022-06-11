@@ -6,7 +6,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { CreateProductDTO } from './dto/craete-product.dto';
+import {
+  CreateProductDTO,
+  SizeItemDTO,
+} from './dto/create-product.dto';
 import { FilterForProductDTO } from './dto/filter-for-product.dto';
 import { ProductBelongsToType } from './enums/belongsto.enum';
 
@@ -77,18 +80,54 @@ export class ProductService {
 
   async createProduct(dto: CreateProductDTO) {
     try {
+      var sizes = JSON.parse(dto.sizes.toString()) as Array<SizeItemDTO>;
       var checkProduct = await this.prisma.product.findFirst({
         where: {
-          name_tm: dto.name_tm,
+          code: dto.code,
         },
       });
+
       if (!checkProduct) {
-        console.log(typeof dto.brand_id);
-        for (var i = 1; i <= 1000; i++) {
-          dto.name_tm = dto.name_tm + i.toString();
-          var newProduct = await this.prisma.product.create({ data: dto });
+        var newProduct = await this.prisma.product.create({
+          data: {
+            name_tm: dto.name_tm,
+            name_ru: dto.name_ru,
+            price: dto.price,
+            color_id: dto.color_id,
+            gender_id: dto.gender_id,
+            description_ru: dto.description_ru,
+            description_tm: dto.description_tm,
+            brand_id: dto.brand_id,
+            market_id: dto.market_id,
+            category_id: dto.category_id,
+            quantity: 0,
+            code: dto.code,
+          },
+        });
+        newProduct['sizes'] = dto.sizes;
+        var countTotal = 0;
+        for (var i = 0; i < sizes.length; i++) {
+          var size = sizes[i];
+          countTotal = countTotal + size.count;
+          await this.prisma.filter_Product.create({
+            data: {
+              size_id: size.size_id,
+              quantity: size.count,
+              product_id: newProduct.id,
+            },
+          });
         }
-        return 'Created 1000 products with same dto';
+        console.log(countTotal);
+
+        var updateProduct = await this.prisma.product.update({
+          where: {
+            id: newProduct.id,
+          },
+          data: {
+            quantity: countTotal,
+          },
+        });
+        return updateProduct;
       } else return new BadRequestException('this product already exits');
     } catch (error) {
       throw error;
@@ -100,7 +139,6 @@ export class ProductService {
     type: ProductBelongsToType,
     id: number,
   ) {
-
     var cursor = filter.lastProductId;
     var take = filter.take;
     delete filter.lastProductId;
@@ -116,6 +154,8 @@ export class ProductService {
       filter.color_id = id;
     } else if (type === ProductBelongsToType.GENDER) {
       filter.gender_id = id;
+    } else if (type === ProductBelongsToType.SIZE) {
+      filter.size_id = id;
     }
 
     let {
@@ -131,31 +171,109 @@ export class ProductService {
       brand_id,
       category_id,
       market_id,
+      size_id,
     } = filter;
 
     console.log(filter);
-    
 
     if (!cursor) {
-      var check = await this.prisma.product.findFirst({ where: { ...filter } });
+      var check = await this.prisma.product.findFirst({
+        where: {
+          name_tm: filter.name_tm,
+          name_ru: filter.name_ru,
+          price: filter.price,
+          color_id: filter.color_id,
+          gender_id: filter.gender_id,
+          description_ru: filter.description_ru,
+          description_tm: filter.description_tm,
+          brand_id: filter.brand_id,
+          market_id: filter.market_id,
+          category_id: filter.category_id,
+          quantity: filter.quantity,
+          code: filter.code,
+          filter_Product: {
+            some: {
+              size_id: filter.size_id,
+            },
+          },
+        },
+      });
+
       console.log(check);
       if (check) cursor = check.id;
       else return [];
     }
 
     var checkProduct = await this.prisma.product.findFirst({
-      where: { id: cursor, ...filter },
+      where: {
+        id: cursor,
+        name_tm: filter.name_tm,
+        name_ru: filter.name_ru,
+        price: filter.price,
+        color_id: filter.color_id,
+        gender_id: filter.gender_id,
+        description_ru: filter.description_ru,
+        description_tm: filter.description_tm,
+        brand_id: filter.brand_id,
+        market_id: filter.market_id,
+        category_id: filter.category_id,
+        quantity: filter.quantity,
+        code: filter.code,
+        filter_Product: {
+          some: {
+            product_id: filter.size_id,
+          },
+        },
+      },
     });
 
     while (!checkProduct) {
       cursor++;
       checkProduct = await this.prisma.product.findFirst({
-        where: { id: cursor, ...filter },
+        where: {
+          id: cursor,
+          name_tm: filter.name_tm,
+          name_ru: filter.name_ru,
+          price: filter.price,
+          color_id: filter.color_id,
+          gender_id: filter.gender_id,
+          description_ru: filter.description_ru,
+          description_tm: filter.description_tm,
+          brand_id: filter.brand_id,
+          market_id: filter.market_id,
+          category_id: filter.category_id,
+          quantity: filter.quantity,
+          code: filter.code,
+          filter_Product: {
+            some: {
+              product_id: filter.size_id,
+            },
+          },
+        },
       });
     }
 
     var getProducts = await this.prisma.product.findMany({
-      where: { ...filter },
+      where: {
+        name_tm: filter.name_tm,
+        name_ru: filter.name_ru,
+        price: filter.price,
+        color_id: filter.color_id,
+        gender_id: filter.gender_id,
+        description_ru: filter.description_ru,
+        description_tm: filter.description_tm,
+        brand_id: filter.brand_id,
+        market_id: filter.market_id,
+        category_id: filter.category_id,
+        quantity: filter.quantity,
+        code: filter.code,
+        filter_Product: {
+          some: {
+            product_id: filter.size_id,
+          },
+        },
+      },
+
       take,
       cursor: { id: checkProduct.id },
     });

@@ -29,11 +29,6 @@ export class CreateProductDTO {
   @IsNotEmpty()
   gender_id: number;
 
-  @IsNumber()
-  @Type(() => Number)
-  @IsNotEmpty()
-  quantity: number;
-
   @IsString()
   @IsNotEmpty()
   code: string;
@@ -60,4 +55,15 @@ export class CreateProductDTO {
   @Type(() => Number)
   @IsNotEmpty()
   market_id: number;
+
+  @IsNotEmpty()
+  @IsString()
+  sizes: SizeItemDTO[]
+}
+
+export class SizeItemDTO {
+
+  size_id: number;
+
+  count: number;
 }
