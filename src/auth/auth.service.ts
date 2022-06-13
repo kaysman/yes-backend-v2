@@ -3,7 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import {
   getImagePath,
   hashString,
-  writeWebpFile,
+  writeFileFromBase64,
 } from 'src/shared/helper';
 import {
   CreateUserDTO,
@@ -45,7 +45,7 @@ export class AuthService {
           });
           if (dto.image) {
             var fileName = dto.phoneNumber;
-            await writeWebpFile(dto.image, fileName);
+            await writeFileFromBase64(dto.image, fileName);
           }
 
           newUser.image = getImagePath(dto.phoneNumber);

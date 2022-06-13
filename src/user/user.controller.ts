@@ -1,4 +1,4 @@
-import { writeWebpFile } from 'src/shared/helper';
+import { writeFileFromBase64 } from 'src/shared/helper';
 
 import {
   Body,
@@ -29,6 +29,6 @@ export class UserController {
   @Post('upload/image')
   async uploadImage65(@Body() dto: UploadImageDTO){
     
-    return writeWebpFile(dto.image, 'photo');
+    return writeFileFromBase64(dto.image, 'photo');
   }
 }

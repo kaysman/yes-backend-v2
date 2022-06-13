@@ -26,7 +26,11 @@ export class FilterForProductDTO {
 
   @IsOptional()
   @IsString()
-  price?: string;
+  ourPrice?: string;
+
+  @IsOptional()
+  @IsString()
+  marketPrice?: string;
 
   @IsOptional()
   @IsNumber()

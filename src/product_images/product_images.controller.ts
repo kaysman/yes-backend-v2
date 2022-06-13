@@ -19,10 +19,12 @@ export class ProductImagesController {
     try {
       var res = await this.productImagesService.createProductImage(dto);
       apiResponse.responseCode = 200;
+      apiResponse.success = true;
       apiResponse.data = res;
       apiResponse.message = '';
     } catch (error) {
       apiResponse.responseCode = error.responseCode;
+      apiResponse.success = false;
       apiResponse.message = error.toString();
     } finally {
       return apiResponse;

@@ -11,6 +11,7 @@ import {
   SizeItemDTO,
 } from './dto/create-product.dto';
 import { FilterForProductDTO } from './dto/filter-for-product.dto';
+import { UploadExcelDTO } from './dto/upload-excel.dto';
 import { ProductBelongsToType } from './enums/belongsto.enum';
 
 @Injectable()
@@ -40,39 +41,61 @@ export class ProductService {
   }
 
   async getMarketProducts(marketId: number, pagination: FilterForProductDTO) {
-    try {
-      return await this.getProducts(
-        pagination,
-        ProductBelongsToType.MARKET,
-        marketId,
-      );
-    } catch (error) {
-      throw error;
-    }
+    // try {
+    //   return await this.getProducts(
+    //     pagination,
+    //     ProductBelongsToType.MARKET,
+    //     marketId,
+    //   );
+    // } catch (error) {
+    //   throw error;
+    // }
   }
 
   async getBrandProducts(brandId: number, pagination: FilterForProductDTO) {
-    try {
-      return await this.getProducts(
-        pagination,
-        ProductBelongsToType.BRAND,
-        brandId,
-      );
-    } catch (error) {
-      throw error;
-    }
+    // try {
+    //   return await this.getProducts(
+    //     pagination,
+    //     ProductBelongsToType.BRAND,
+    //     brandId,
+    //   );
+    // } catch (error) {
+    //   throw error;
+    // }
   }
 
   async getCategoryProducts(
     categoryId: number,
     pagination: FilterForProductDTO,
   ) {
+    // try {
+    //   return await this.getProducts(
+    //     pagination,
+    //     ProductBelongsToType.CATEGORY,
+    //     categoryId,
+    //   );
+    // } catch (error) {
+    //   throw error;
+    // }
+  }
+
+  async uploadExcel(dto: UploadExcelDTO) {
     try {
-      return await this.getProducts(
-        pagination,
-        ProductBelongsToType.CATEGORY,
-        categoryId,
-      );
+      
+      const exceljs = require('exceljs');
+      let buffer = Buffer.from(dto.excelBase64String, 'base64');
+      let columns = [];
+
+      var workbook = new exceljs.Workbook();
+      await workbook.xlsx.load(buffer).then(() => {
+        var worksheet = workbook.worksheets[0];
+        var row = worksheet.LastRow
+        columns = worksheet.getRow(1).values;
+      });
+      
+      
+
+
     } catch (error) {
       throw error;
     }
@@ -92,7 +115,8 @@ export class ProductService {
           data: {
             name_tm: dto.name_tm,
             name_ru: dto.name_ru,
-            price: dto.price,
+            ourPrice: dto.ourPrice,
+            marketPrice: dto.marketPrice,
             color_id: dto.color_id,
             gender_id: dto.gender_id,
             description_ru: dto.description_ru,
@@ -139,144 +163,144 @@ export class ProductService {
     type: ProductBelongsToType,
     id: number,
   ) {
-    var cursor = filter.lastProductId;
-    var take = filter.take;
-    delete filter.lastProductId;
-    delete filter.take;
+    // var cursor = filter.lastProductId;
+    // var take = filter.take;
+    // delete filter.lastProductId;
+    // delete filter.take;
 
-    if (type === ProductBelongsToType.MARKET) {
-      filter.market_id = id;
-    } else if (type === ProductBelongsToType.BRAND) {
-      filter.brand_id = id;
-    } else if (type === ProductBelongsToType.CATEGORY) {
-      filter.category_id = id;
-    } else if (type === ProductBelongsToType.COLOR) {
-      filter.color_id = id;
-    } else if (type === ProductBelongsToType.GENDER) {
-      filter.gender_id = id;
-    } else if (type === ProductBelongsToType.SIZE) {
-      filter.size_id = id;
-    }
+    // if (type === ProductBelongsToType.MARKET) {
+    //   filter.market_id = id;
+    // } else if (type === ProductBelongsToType.BRAND) {
+    //   filter.brand_id = id;
+    // } else if (type === ProductBelongsToType.CATEGORY) {
+    //   filter.category_id = id;
+    // } else if (type === ProductBelongsToType.COLOR) {
+    //   filter.color_id = id;
+    // } else if (type === ProductBelongsToType.GENDER) {
+    //   filter.gender_id = id;
+    // } else if (type === ProductBelongsToType.SIZE) {
+    //   filter.size_id = id;
+    // }
 
-    let {
-      name_tm,
-      name_ru,
-      price,
-      color_id,
-      gender_id,
-      quantity,
-      code,
-      description_tm,
-      description_ru,
-      brand_id,
-      category_id,
-      market_id,
-      size_id,
-    } = filter;
+    // let {
+    //   name_tm,
+    //   name_ru,
+    //   price,
+    //   color_id,
+    //   gender_id,
+    //   quantity,
+    //   code,
+    //   description_tm,
+    //   description_ru,
+    //   brand_id,
+    //   category_id,
+    //   market_id,
+    //   size_id,
+    // } = filter;
 
-    console.log(filter);
+    // console.log(filter);
 
-    if (!cursor) {
-      var check = await this.prisma.product.findFirst({
-        where: {
-          name_tm: filter.name_tm,
-          name_ru: filter.name_ru,
-          price: filter.price,
-          color_id: filter.color_id,
-          gender_id: filter.gender_id,
-          description_ru: filter.description_ru,
-          description_tm: filter.description_tm,
-          brand_id: filter.brand_id,
-          market_id: filter.market_id,
-          category_id: filter.category_id,
-          quantity: filter.quantity,
-          code: filter.code,
-          filter_Product: {
-            some: {
-              size_id: filter.size_id,
-            },
-          },
-        },
-      });
+    // if (!cursor) {
+    //   var check = await this.prisma.product.findFirst({
+    //     where: {
+    //       name_tm: filter.name_tm,
+    //       name_ru: filter.name_ru,
+    //       price: filter.price,
+    //       color_id: filter.color_id,
+    //       gender_id: filter.gender_id,
+    //       description_ru: filter.description_ru,
+    //       description_tm: filter.description_tm,
+    //       brand_id: filter.brand_id,
+    //       market_id: filter.market_id,
+    //       category_id: filter.category_id,
+    //       quantity: filter.quantity,
+    //       code: filter.code,
+    //       filter_Product: {
+    //         some: {
+    //           size_id: filter.size_id,
+    //         },
+    //       },
+    //     },
+    //   });
 
-      console.log(check);
-      if (check) cursor = check.id;
-      else return [];
-    }
+    //   console.log(check);
+    //   if (check) cursor = check.id;
+    //   else return [];
+    // }
 
-    var checkProduct = await this.prisma.product.findFirst({
-      where: {
-        id: cursor,
-        name_tm: filter.name_tm,
-        name_ru: filter.name_ru,
-        price: filter.price,
-        color_id: filter.color_id,
-        gender_id: filter.gender_id,
-        description_ru: filter.description_ru,
-        description_tm: filter.description_tm,
-        brand_id: filter.brand_id,
-        market_id: filter.market_id,
-        category_id: filter.category_id,
-        quantity: filter.quantity,
-        code: filter.code,
-        filter_Product: {
-          some: {
-            product_id: filter.size_id,
-          },
-        },
-      },
-    });
+    // var checkProduct = await this.prisma.product.findFirst({
+    //   where: {
+    //     id: cursor,
+    //     name_tm: filter.name_tm,
+    //     name_ru: filter.name_ru,
+    //     price: filter.price,
+    //     color_id: filter.color_id,
+    //     gender_id: filter.gender_id,
+    //     description_ru: filter.description_ru,
+    //     description_tm: filter.description_tm,
+    //     brand_id: filter.brand_id,
+    //     market_id: filter.market_id,
+    //     category_id: filter.category_id,
+    //     quantity: filter.quantity,
+    //     code: filter.code,
+    //     filter_Product: {
+    //       some: {
+    //         product_id: filter.size_id,
+    //       },
+    //     },
+    //   },
+    // });
 
-    while (!checkProduct) {
-      cursor++;
-      checkProduct = await this.prisma.product.findFirst({
-        where: {
-          id: cursor,
-          name_tm: filter.name_tm,
-          name_ru: filter.name_ru,
-          price: filter.price,
-          color_id: filter.color_id,
-          gender_id: filter.gender_id,
-          description_ru: filter.description_ru,
-          description_tm: filter.description_tm,
-          brand_id: filter.brand_id,
-          market_id: filter.market_id,
-          category_id: filter.category_id,
-          quantity: filter.quantity,
-          code: filter.code,
-          filter_Product: {
-            some: {
-              product_id: filter.size_id,
-            },
-          },
-        },
-      });
-    }
+    // while (!checkProduct) {
+    //   cursor++;
+    //   checkProduct = await this.prisma.product.findFirst({
+    //     where: {
+    //       id: cursor,
+    //       name_tm: filter.name_tm,
+    //       name_ru: filter.name_ru,
+    //       price: filter.price,
+    //       color_id: filter.color_id,
+    //       gender_id: filter.gender_id,
+    //       description_ru: filter.description_ru,
+    //       description_tm: filter.description_tm,
+    //       brand_id: filter.brand_id,
+    //       market_id: filter.market_id,
+    //       category_id: filter.category_id,
+    //       quantity: filter.quantity,
+    //       code: filter.code,
+    //       filter_Product: {
+    //         some: {
+    //           product_id: filter.size_id,
+    //         },
+    //       },
+    //     },
+    //   });
+    // }
 
-    var getProducts = await this.prisma.product.findMany({
-      where: {
-        name_tm: filter.name_tm,
-        name_ru: filter.name_ru,
-        price: filter.price,
-        color_id: filter.color_id,
-        gender_id: filter.gender_id,
-        description_ru: filter.description_ru,
-        description_tm: filter.description_tm,
-        brand_id: filter.brand_id,
-        market_id: filter.market_id,
-        category_id: filter.category_id,
-        quantity: filter.quantity,
-        code: filter.code,
-        filter_Product: {
-          some: {
-            product_id: filter.size_id,
-          },
-        },
-      },
+    // var getProducts = await this.prisma.product.findMany({
+    //   where: {
+    //     name_tm: filter.name_tm,
+    //     name_ru: filter.name_ru,
+    //     price: filter.price,
+    //     color_id: filter.color_id,
+    //     gender_id: filter.gender_id,
+    //     description_ru: filter.description_ru,
+    //     description_tm: filter.description_tm,
+    //     brand_id: filter.brand_id,
+    //     market_id: filter.market_id,
+    //     category_id: filter.category_id,
+    //     quantity: filter.quantity,
+    //     code: filter.code,
+    //     filter_Product: {
+    //       some: {
+    //         product_id: filter.size_id,
+    //       },
+    //     },
+    //   },
 
-      take,
-      cursor: { id: checkProduct.id },
-    });
-    return getProducts;
+    //   take,
+    //   cursor: { id: checkProduct.id },
+    // });
+    // return getProducts;
   }
 }

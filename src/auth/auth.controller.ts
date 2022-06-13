@@ -22,10 +22,12 @@ export class AuthController {
     try {
       var res = await this.authService.signup(signupDTO);
       apiResponse.responseCode = 200;
+      apiResponse.success = true;
       apiResponse.data = res;
       apiResponse.message = '';
     } catch (error) {
       apiResponse.responseCode = error.responseCode;
+      apiResponse.success = false;
       apiResponse.message = error.toString();
     } finally {
       return apiResponse;
@@ -37,11 +39,13 @@ export class AuthController {
     var apiResponse = new ApiResponse();
     try {
       var res = await this.authService.signin(loginDto);
+      apiResponse.success = true;
       apiResponse.responseCode = 200;
       apiResponse.data = res;
       apiResponse.message = '';
     } catch (error) {
       apiResponse.responseCode = error.responseCode;
+      apiResponse.success = false;
       apiResponse.message = error.toString();
     } finally {
       return apiResponse;

@@ -7,6 +7,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Query,
 } from '@nestjs/common';
 
 import { CategoryService } from './category.service';
@@ -22,10 +23,12 @@ export class CategoryController {
     try {
       var res = await this.categoryService.getAllCategories();
       apiResponse.responseCode = 200;
+      apiResponse.success = true;
       apiResponse.data = res;
       apiResponse.message = '';
     } catch (error) {
       apiResponse.responseCode = error.responseCode;
+      apiResponse.success = false;
       apiResponse.message = error.toString();
     } finally {
       return apiResponse;
@@ -33,15 +36,35 @@ export class CategoryController {
   }
 
   @Get(':id')
-  async getCategoryById(@Param('id',ParseIntPipe)categoryId: number){
+  async getCategoryById(@Param('id', ParseIntPipe) categoryId: number) {
     var apiResponse = new ApiResponse();
     try {
       var res = await this.categoryService.getCategoryById(categoryId);
+      apiResponse.responseCode = 200;
+      apiResponse.success = true;
+      apiResponse.data = res;
+      apiResponse.message = '';
+    } catch (error) {
+      apiResponse.responseCode = error.responseCode;
+      apiResponse.success = false;
+      apiResponse.message = error.toString();
+    } finally {
+      return apiResponse;
+    }
+  }
+
+  @Get('')
+  async searchCategory(@Query() search) {
+    var apiResponse = new ApiResponse();
+    try {
+      var res = await this.categoryService.searchCategory(search.search);
+      apiResponse.success = true;
       apiResponse.responseCode = 200;
       apiResponse.data = res;
       apiResponse.message = '';
     } catch (error) {
       apiResponse.responseCode = error.responseCode;
+      apiResponse.success = false;
       apiResponse.message = error.toString();
     } finally {
       return apiResponse;
@@ -54,10 +77,12 @@ export class CategoryController {
     try {
       var res = await this.categoryService.createCategory(dto);
       apiResponse.responseCode = 200;
+      apiResponse.success = true;
       apiResponse.data = res;
       apiResponse.message = '';
     } catch (error) {
       apiResponse.responseCode = error.responseCode;
+      apiResponse.success = false;
       apiResponse.message = error.toString();
     } finally {
       return apiResponse;

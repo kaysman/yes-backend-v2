@@ -1,7 +1,7 @@
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   getImagePath,
-  writeWebpFile,
+  writeFileFromBase64,
 } from 'src/shared/helper';
 
 import {
@@ -25,7 +25,7 @@ export class ProductImagesService {
           data: dto,
           
         });
-        await writeWebpFile(dto.image, checkProduct.name_tm);
+        await writeFileFromBase64(dto.image, checkProduct.name_tm);
         newProductImage.image = getImagePath(checkProduct.name_tm);
       } else return new BadRequestException("product does not exits")
 

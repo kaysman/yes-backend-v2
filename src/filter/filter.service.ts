@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 
 import { CreateFilterDTO } from './dto/create-filter.dto';
+import { GetFilterDTO } from './dto/get-filter-dto';
 
 @Injectable()
 export class FilterService {
@@ -21,13 +22,70 @@ export class FilterService {
     }
   }
 
+  async searchFilter(query: string) {
+    try {
+      return await this.prisma.filter.findMany({
+        where: {
+          OR: [
+            {
+              name_tm: {
+                contains: query,
+                mode: 'insensitive',
+              },
+            },
+            {
+              name_ru: {
+                contains: query,
+                mode: 'insensitive',
+              },
+            },
+          ],
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async getFilterById(filterId: number) {
     try {
       var getFilter = await this.prisma.filter.findUnique({
-        where: { id: filterId },
+        where: { id: filterId }
       });
       if (getFilter) {
-        return getFilter;
+        let allProducts = [];
+        var productsFromColorAndGender = await this.prisma.product.findMany({
+          where: {
+            OR: [
+              {
+                color_id: filterId
+              },
+              {
+                gender_id: filterId,
+              }
+            ],
+          }
+        });
+
+        var productsFromSize = await this.prisma.filter_Product.findMany({
+          where: {
+            size_id: filterId
+          }, include: {product: true}
+        });
+
+        allProducts.concat(productsFromColorAndGender);
+        allProducts.concat(productsFromSize);
+        
+        
+        let { name_tm, name_ru, type} = getFilter;
+        var filter = new GetFilterDTO();
+        filter.name_ru = name_ru;
+        filter.name_tm = name_tm;
+        filter.type = type;
+        filter.products = allProducts;
+
+        return filter;
+
       } else return new NotFoundException('filter cannot be found');
     } catch (error) {
       throw error;

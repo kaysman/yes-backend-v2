@@ -17,7 +17,11 @@ export class CreateProductDTO {
 
   @IsString()
   @IsNotEmpty()
-  price: string;
+  ourPrice: string;
+
+  @IsString()
+  @IsNotEmpty()
+  marketPrice: string;
 
   @IsNumber()
   @Type(() => Number)

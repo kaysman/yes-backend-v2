@@ -11,7 +11,7 @@ export function getImagePath(fileName) {
   return 'assets/images/' + fileName + '.webp';
 }
 
-export function writeWebpFile(base64String: string, fileName: string) {
+export function writeFileFromBase64(base64String: string, fileName: string) {
   fs.writeFile(getImagePath(fileName), base64String, { encoding: 'base64' }, function (err) {
     if (err) {
       throw err;
@@ -37,7 +37,13 @@ export function get_webpbase64(path) {
         console.log(result);
       });
     }
-  });
-
-  
+  });  
 }
+  export function GetExcelFile(){
+var XLSX = require('xlsx')
+var workbook = XLSX.readFile('C:/Users/hajym/OneDrive/Documents/doc.xlsx');
+var sheet_name_list = workbook.SheetNames;
+var xlData = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
+console.log(xlData);
+
+  }

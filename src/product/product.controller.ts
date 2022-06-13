@@ -12,6 +12,7 @@ import {
 
 import { CreateProductDTO } from './dto/create-product.dto';
 import { FilterForProductDTO } from './dto/filter-for-product.dto';
+import { UploadExcelDTO } from './dto/upload-excel.dto';
 import { ProductService } from './product.service';
 
 @Controller('products')
@@ -24,10 +25,12 @@ export class ProductController {
     try {
       var res = await this.productService.getAllProducts();
       apiResponse.responseCode = 200;
+      apiResponse.success = true;
       apiResponse.data = res;
       apiResponse.message = '';
     } catch (error) {
       apiResponse.responseCode = error.responseCode;
+      apiResponse.success = false;
       apiResponse.message = error.toString();
     } finally {
       return apiResponse;
@@ -40,10 +43,12 @@ export class ProductController {
     try {
       var res = await this.productService.getProductById(productId);
       apiResponse.responseCode = 200;
+      apiResponse.success = true;
       apiResponse.data = res;
       apiResponse.message = '';
     } catch (error) {
       apiResponse.responseCode = error.responseCode;
+      apiResponse.success = false;
       apiResponse.message = error.toString();
     } finally {
       return apiResponse;
@@ -59,10 +64,12 @@ export class ProductController {
     try {
       var res = await this.productService.getMarketProducts(marketId, dto);
       apiResponse.responseCode = 200;
+      apiResponse.success = true;
       apiResponse.data = res;
       apiResponse.message = '';
     } catch (error) {
       apiResponse.responseCode = error.responseCode;
+      apiResponse.success = false;
       apiResponse.message = error.toString();
     } finally {
       return apiResponse;
@@ -78,10 +85,12 @@ export class ProductController {
     try {
       var res = await this.productService.getBrandProducts(brandId, dto);
       apiResponse.responseCode = 200;
+      apiResponse.success = true;
       apiResponse.data = res;
       apiResponse.message = '';
     } catch (error) {
       apiResponse.responseCode = error.responseCode;
+      apiResponse.success = false;
       apiResponse.message = error.toString();
     } finally {
       return apiResponse;
@@ -97,10 +106,12 @@ export class ProductController {
     try {
       var res = await this.productService.getCategoryProducts(categoryId, dto);
       apiResponse.responseCode = 200;
+      apiResponse.success = true;
       apiResponse.data = res;
       apiResponse.message = '';
     } catch (error) {
       apiResponse.responseCode = error.responseCode;
+      apiResponse.success = false;
       apiResponse.message = error.toString();
     } finally {
       return apiResponse;
@@ -113,10 +124,30 @@ export class ProductController {
     try {
       var res = await this.productService.createProduct(dto);
       apiResponse.responseCode = 200;
+      apiResponse.success = true;
       apiResponse.data = res;
       apiResponse.message = '';
     } catch (error) {
       apiResponse.responseCode = error.responseCode;
+      apiResponse.success = false;
+      apiResponse.message = error.toString();
+    } finally {
+      return apiResponse;
+    }
+  }
+
+  @Post('uploadExcel')
+  async uploadExcel(@Body() dto: UploadExcelDTO) {
+    var apiResponse = new ApiResponse();
+    try {
+      var res = await this.productService.uploadExcel(dto);
+      apiResponse.responseCode = 200;
+      apiResponse.success = true;
+      apiResponse.data = res;
+      apiResponse.message = '';
+    } catch (error) {
+      apiResponse.responseCode = error.responseCode;
+      apiResponse.success = false;
       apiResponse.message = error.toString();
     } finally {
       return apiResponse;

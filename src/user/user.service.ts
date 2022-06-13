@@ -34,7 +34,7 @@ export class UserService {
           console.log('we are here');
 
           // var fileName = dto.phoneNumber;
-          // return await writeWebpFile(dto.image, fileName);
+          // return await writeFileFromBase64(dto.image, fileName);
         }
         delete newUser.password;
         return newUser;
