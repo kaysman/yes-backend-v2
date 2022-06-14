@@ -19,11 +19,11 @@ import { ProductService } from './product.service';
 export class ProductController {
   constructor(private productService: ProductService) {}
 
-  @Get('all')
-  async getProducts() {
+  @Get('')
+  async getProducts(@Query() filter: FilterForProductDTO) {
     var apiResponse = new ApiResponse();
     try {
-      var res = await this.productService.getAllProducts();
+      var res = await this.productService.getAllProducts(filter);
       apiResponse.responseCode = 200;
       apiResponse.success = true;
       apiResponse.data = res;
@@ -55,68 +55,6 @@ export class ProductController {
     }
   }
 
-  @Get('market/:id')
-  async getMarketProducts(
-    @Param('id', ParseIntPipe) marketId: number,
-    @Query() dto: FilterForProductDTO,
-  ) {
-    var apiResponse = new ApiResponse();
-    try {
-      var res = await this.productService.getMarketProducts(marketId, dto);
-      apiResponse.responseCode = 200;
-      apiResponse.success = true;
-      apiResponse.data = res;
-      apiResponse.message = '';
-    } catch (error) {
-      apiResponse.responseCode = error.responseCode;
-      apiResponse.success = false;
-      apiResponse.message = error.toString();
-    } finally {
-      return apiResponse;
-    }
-  }
-
-  @Get('brand/:id')
-  async getBrandProducts(
-    @Param('id', ParseIntPipe) brandId: number,
-    @Query() dto: FilterForProductDTO,
-  ) {
-    var apiResponse = new ApiResponse();
-    try {
-      var res = await this.productService.getBrandProducts(brandId, dto);
-      apiResponse.responseCode = 200;
-      apiResponse.success = true;
-      apiResponse.data = res;
-      apiResponse.message = '';
-    } catch (error) {
-      apiResponse.responseCode = error.responseCode;
-      apiResponse.success = false;
-      apiResponse.message = error.toString();
-    } finally {
-      return apiResponse;
-    }
-  }
-
-  @Get('category/:id')
-  async getCategoryProducts(
-    @Param('id', ParseIntPipe) categoryId: number,
-    @Query() dto: FilterForProductDTO,
-  ) {
-    var apiResponse = new ApiResponse();
-    try {
-      var res = await this.productService.getCategoryProducts(categoryId, dto);
-      apiResponse.responseCode = 200;
-      apiResponse.success = true;
-      apiResponse.data = res;
-      apiResponse.message = '';
-    } catch (error) {
-      apiResponse.responseCode = error.responseCode;
-      apiResponse.success = false;
-      apiResponse.message = error.toString();
-    } finally {
-      return apiResponse;
-    }
-  }
 
   @Post('create')
   async createProduct(@Body() dto: CreateProductDTO) {

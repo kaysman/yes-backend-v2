@@ -15,13 +15,15 @@ export class CreateProductDTO {
   @IsNotEmpty()
   name_ru: string;
 
-  @IsString()
+  @IsNumber()
+  @Type(() => Number)
   @IsNotEmpty()
-  ourPrice: string;
+  ourPrice: number;
 
-  @IsString()
+  @IsNumber()
+  @Type(() => Number)
   @IsNotEmpty()
-  marketPrice: string;
+  marketPrice: number;
 
   @IsNumber()
   @Type(() => Number)

@@ -139,12 +139,12 @@ model Product {
   id             Int      @id @default(autoincrement())
   name_tm        String
   name_ru        String
-  ourPrice       String
-  marketPrice    String
+  ourPrice       Int
+  marketPrice    Int
   color_id       Int
   gender_id      Int 
   quantity       Int      @default(0)
-  code           String
+  code           String   @unique
   description_tm String?
   description_ru String?
   createdAt      DateTime @default(now())

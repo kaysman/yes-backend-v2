@@ -9,10 +9,13 @@ export class PaginationDTO {
     @IsOptional()
     @IsNumber()
     @Type(()=> Number)
-    lastProductId? : number;
+    lastId? : number;
 
     @IsOptional()
     @IsNumber()
     @Type(()=> Number)
     take? : number = 10;
+
+    @IsOptional()
+    search? : string;
 }

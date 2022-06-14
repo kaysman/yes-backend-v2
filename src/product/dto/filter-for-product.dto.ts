@@ -2,35 +2,20 @@ import { Type } from 'class-transformer';
 import {
   IsNumber,
   IsOptional,
-  IsString,
 } from 'class-validator';
+import { PaginationDTO } from 'src/shared/dto/pagination.dto';
 
-export class FilterForProductDTO {
-  @IsOptional()
-  @IsNumber()
-  @Type(() => Number)
-  lastProductId?: number;
+export class FilterForProductDTO extends PaginationDTO {
 
   @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  take?: number = 10;
+  priceFrom?: number;
 
   @IsOptional()
-  @IsString()
-  name_tm?: string;
-
-  @IsOptional()
-  @IsString()
-  name_ru?: string;
-
-  @IsOptional()
-  @IsString()
-  ourPrice?: string;
-
-  @IsOptional()
-  @IsString()
-  marketPrice?: string;
+  @IsNumber()
+  @Type(() => Number)
+  priceTo?: number;
 
   @IsOptional()
   @IsNumber()
@@ -46,18 +31,6 @@ export class FilterForProductDTO {
   @IsNumber()
   @Type(() => Number)
   quantity?: number;
-
-  @IsOptional()
-  @IsString()
-  code?: string;
-
-  @IsOptional()
-  @IsString()
-  description_tm?: string;
-
-  @IsOptional()
-  @IsString()
-  description_ru?: string;
 
   @IsOptional()
   @IsNumber()
