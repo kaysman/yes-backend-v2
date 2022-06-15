@@ -11,7 +11,6 @@ import {
   SizeItemDTO,
 } from './dto/create-product.dto';
 import { FilterForProductDTO } from './dto/filter-for-product.dto';
-import { UploadExcelDTO } from './dto/upload-excel.dto';
 import { ProductBelongsToType } from './enums/belongsto.enum';
 
 @Injectable()
@@ -19,8 +18,6 @@ export class ProductService {
   constructor(private prisma: PrismaService) {}
 
   async getAllProducts(dto: FilterForProductDTO) {
-    console.log(dto);
-    
     try {
       let {
         priceFrom,
@@ -40,25 +37,25 @@ export class ProductService {
       if (search) {
         return await this.searchProducts(search, take, lastId);
       }
-      
-      var cursor = lastId ? { id: lastId } : undefined; 
+
+      var cursor = lastId ? { id: lastId } : undefined;
       var products = await this.prisma.product.findMany({
         take: take,
         cursor: cursor,
         where: {
           AND: [
-            {color_id: color_id},
-            {gender_id: gender_id},
-            {brand_id: brand_id},
-            {category_id: category_id},
-            {market_id: market_id},
-            {quantity: quantity},
+            { color_id: color_id },
+            { gender_id: gender_id },
+            { brand_id: brand_id },
+            { category_id: category_id },
+            { market_id: market_id },
+            { quantity: quantity },
             {
               AND: [
                 { ourPrice: { gte: priceFrom } },
                 { ourPrice: { lt: priceTo } },
               ],
-            }
+            },
           ],
         },
       });
@@ -70,7 +67,7 @@ export class ProductService {
 
   private async searchProducts(query: string, take: number, cursor?: number) {
     try {
-      var cursorObject = cursor ? { id: cursor } : undefined; 
+      var cursorObject = cursor ? { id: cursor } : undefined;
       return await this.prisma.product.findMany({
         take: take,
         cursor: cursorObject,
@@ -127,16 +124,163 @@ export class ProductService {
     }
   }
 
-  async uploadExcel(dto: UploadExcelDTO) {
+  async uploadExcel(file: Express.Multer.File) {
     try {
       const exceljs = require('exceljs');
-      let buffer = Buffer.from(dto.excelBase64String, 'base64');
-      let columns = [];
+      let buffer = file.buffer;
+
       var workbook = new exceljs.Workbook();
+      var prismafilters = await this.prisma.filter.findMany();
+      var prismaBrands = await this.prisma.brand.findMany();
+      var prismacategories = await this.prisma.category.findMany();
+      var prismaMarkets = await this.prisma.market.findMany();
+
+      var dbColors = prismafilters
+        .filter((element) => element.type === 'COLOR')
+        .map((e) => e.id);
+      var dbGenders = prismafilters
+        .filter((element) => element.type === 'GENDER')
+        .map((e) => e.id);
+      var dbSizes = prismafilters
+        .filter((element) => element.type === 'SIZE')
+        .map((e) => e.id);
+      var dbBrands = prismaBrands.map((e) => e.id);
+      var dbSubCategories = prismacategories
+        .filter((element) => element.parentId !== null)
+        .map((e) => e.id);
+      var dbMarkets = prismaMarkets.map((e) => e.id);
+
       await workbook.xlsx.load(buffer).then(() => {
-        var worksheet = workbook.worksheets[0];
-        var row = worksheet.LastRow;
-        columns = worksheet.getRow(1).values;
+        let worksheet = workbook.worksheets[1];
+
+        // ------- colors -> 5th index -------------
+        var colors = worksheet.getColumn(5).values;
+
+        for (var i = 2; i <= colors.length - 1; i++) {
+          if (!dbColors.includes(colors[i])) {
+            throw new NotFoundException(
+              'Color with id:' +
+                colors[i] +
+                ' at row:' +
+                i +
+                ' not found, please correct it and try again.',
+            );
+          }
+        }
+        // ----------------- end --------------------
+
+        // ------- genders -> 6th index -------------
+        var genders = worksheet.getColumn(6).values;
+
+        for (var i = 2; i <= genders.length - 1; i++) {
+          if (!dbGenders.includes(genders[i])) {
+            throw new NotFoundException(
+              'Gender with id:' +
+                genders[i] +
+                ' at row:' +
+                i +
+                ' not found, please correct it and try again.',
+            );
+          }
+        }
+        // ----------------- end --------------------
+
+        // ------- sizes -> 14th index -------------
+        var sizes = worksheet.getColumn(14).values;
+
+        for (var i = 2; i <= sizes.length - 1; i++) {
+          var cellValues = sizes[i].split(',');
+          cellValues.forEach((value) => {
+            if (!dbSizes.includes(Number(value.trim()))) {
+              throw new NotFoundException(
+                'Size with id:' +
+                  value.trim() +
+                  ' at row:' +
+                  i +
+                  ' not found, please correct it and try again.',
+              );
+            }
+          });
+        }
+        // ----------------- end --------------------
+
+        // ------- brand -> 11th index -------------
+        var brands = worksheet.getColumn(11).values;
+
+        for (var i = 2; i <= brands.length - 1; i++) {
+          if (!dbBrands.includes(brands[i])) {
+            throw new NotFoundException(
+              'Brand with id:' +
+                brands[i] +
+                ' at row:' +
+                i +
+                ' not found, please correct it and try again.',
+            );
+          }
+        }
+        // ----------------- end --------------------
+
+        // ------- category -> 12th index -------------
+        var categories = worksheet.getColumn(12).values;
+
+        for (var i = 2; i <= categories.length - 1; i++) {
+          if (!dbSubCategories.includes(categories[i])) {
+            throw new NotFoundException(
+              'Category with id:' +
+                categories[i] +
+                ' at row:' +
+                i +
+                ' not found, make sure it is subcategory rather than main and try again.',
+            );
+          }
+        }
+        // ----------------- end --------------------
+
+        // ------- market -> 13th index -------------
+        var markets = worksheet.getColumn(13).values;
+
+        for (var i = 2; i <= markets.length - 1; i++) {
+          if (!dbMarkets.includes(markets[i])) {
+            throw new NotFoundException(
+              'Market with id:' +
+                markets[i] +
+                ' at row:' +
+                i +
+                ' not found, please correct it and try again.',
+            );
+          }
+        }
+        // ----------------- end --------------------
+
+        
+
+        var createdProducts = [];
+        for (const r of Array.from({length: worksheet.rowCount - 1 },(v,k)=>k+2)) {
+          let row = worksheet.getRow(r);
+
+          var product = new CreateProductDTO();
+          product.name_tm = row.values[1].trim();
+          product.name_ru = row.values[2].trim();
+          product.ourPrice = Number(row.values[3]);
+          console.log(product.ourPrice);
+          
+          product.marketPrice = Number(row.values[4].trim());
+          product.color_id = Number(row.values[5].trim());
+          product.gender_id = Number(row.values[6].trim());
+          product.code = row.values[8].trim();
+          product.description_tm = row.values[9].trim();
+          product.description_ru = row.values[10].trim();
+          product.brand_id = Number(row.values[11].trim());
+          product.category_id = Number(row.values[12].trim());
+          product.market_id = Number(row.values[13].trim());
+
+          // var newProduct = await this.prisma.product.create({
+          //   data: product
+          // });
+          try {
+            createdProducts.push();
+          } catch (error) {}
+        }
       });
     } catch (error) {
       throw error;

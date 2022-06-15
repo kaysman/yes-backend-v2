@@ -8,11 +8,13 @@ import {
   ParseIntPipe,
   Post,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 import { CreateProductDTO } from './dto/create-product.dto';
 import { FilterForProductDTO } from './dto/filter-for-product.dto';
-import { UploadExcelDTO } from './dto/upload-excel.dto';
 import { ProductService } from './product.service';
 
 @Controller('products')
@@ -75,10 +77,11 @@ export class ProductController {
   }
 
   @Post('uploadExcel')
-  async uploadExcel(@Body() dto: UploadExcelDTO) {
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadExcel(@UploadedFile() file: Express.Multer.File) {
     var apiResponse = new ApiResponse();
     try {
-      var res = await this.productService.uploadExcel(dto);
+      var res = await this.productService.uploadExcel(file);
       apiResponse.responseCode = 200;
       apiResponse.success = true;
       apiResponse.data = res;
@@ -86,7 +89,7 @@ export class ProductController {
     } catch (error) {
       apiResponse.responseCode = error.responseCode;
       apiResponse.success = false;
-      apiResponse.message = error.toString();
+      apiResponse.message = error?.toString();
     } finally {
       return apiResponse;
     }

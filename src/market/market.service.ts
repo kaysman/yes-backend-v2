@@ -1,4 +1,5 @@
 import { PrismaService } from 'src/prisma/prisma.service';
+import { PaginationDTO } from 'src/shared/dto/pagination.dto';
 import {
   getImagePath,
   writeFileFromBase64,
@@ -17,10 +18,22 @@ import { UpdateMarketDTO } from './dto/update-market.dto';
 export class MarketService {
   constructor(private prisma: PrismaService) {}
 
-  async getAllMarkets() {
+  async getMarkets(dto: PaginationDTO) {
     try {
-      var allMarkets = await this.prisma.market.findMany();
-      return allMarkets;
+      let { take, search, lastId: cursor } = dto;
+      var markets;
+      if (search) {
+       markets = await this.searchMarket(search, take, cursor);
+      } else {
+       markets = await this.prisma.market.findMany({
+          take,
+          cursor: cursor ? { id: cursor } : undefined,
+        });
+      }
+      // var response = new GetMarketsResponseDTO();
+      // response.pagination = dto;
+      // response.markets = markets;
+      return markets;
     } catch (error) {
       throw error;
     }
@@ -40,9 +53,11 @@ export class MarketService {
     }
   }
 
-  async searchMarket(query: string) {
+  async searchMarket(query: string, take: number, cursor?: number) {
     try {
       var markets = await this.prisma.market.findMany({
+        take: take,
+        cursor: cursor ? { id: cursor } : undefined,
         where: {
           OR: [
             {

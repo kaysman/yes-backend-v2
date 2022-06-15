@@ -1,4 +1,5 @@
 import { PrismaService } from 'src/prisma/prisma.service';
+import { PaginationDTO } from 'src/shared/dto/pagination.dto';
 import {
   getImagePath,
   writeFileFromBase64,
@@ -17,18 +18,29 @@ import { UpdateBrandDTO } from './dto/update-brand.dto';
 export class BrandService {
   constructor(private prisma: PrismaService) {}
 
-  async getAllBrands() {
+  async getBrands(dto: PaginationDTO) {
     try {
-      var allBrands = await this.prisma.brand.findMany();
-      return allBrands;
+      let { take, search, lastId: cursor } = dto;
+      var brands;
+      if (search) {
+        brands = await this.searchBrand(search, take, cursor);
+       } else {
+        brands = await this.prisma.brand.findMany({
+           take,
+           cursor: cursor ? { id: cursor } : undefined,
+         });
+       }
+      return brands;
     } catch (error) {
       throw error;
     }
   }
 
-  async searchBrand(query: string) {
+  async searchBrand(query: string, take: number, cursor?: number) {
     try {
       var brands = await this.prisma.brand.findMany({
+        take: take,
+        cursor: cursor ? {id: cursor} : undefined,
         where: {
           name: {
             contains: query,

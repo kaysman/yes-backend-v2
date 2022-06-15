@@ -1,4 +1,5 @@
 import { ApiResponse } from 'src/shared/dto/api_response.dto';
+import { PaginationDTO } from 'src/shared/dto/pagination.dto';
 
 import {
   Body,
@@ -19,33 +20,15 @@ import { UpdateBrandDTO } from './dto/update-brand.dto';
 export class BrandController {
   constructor(private brandService: BrandService) {}
 
-  @Get('all')
-  async getBrands() {
+  @Get('')
+  async getBrands(@Query() dto: PaginationDTO) {
     var apiResponse = new ApiResponse();
     try {
-      var res = await this.brandService.getAllBrands();
+      var res = await this.brandService.getBrands(dto);
       apiResponse.responseCode = 200;
       apiResponse.data = res;
       apiResponse.success = true;
       apiResponse.message = res.length + ' brands found';
-    } catch (error) {
-      apiResponse.responseCode = error.responseCode;
-      apiResponse.success = false;
-      apiResponse.message = error.toString();
-    } finally {
-      return apiResponse;
-    }
-  }
-
-  @Get('')
-  async searchBrand(@Query() search) {
-    var apiResponse = new ApiResponse();
-    try {
-      var res = await this.brandService.searchBrand(search.search);
-      apiResponse.success = true;
-      apiResponse.responseCode = 200;
-      apiResponse.data = res;
-      apiResponse.message = '';
     } catch (error) {
       apiResponse.responseCode = error.responseCode;
       apiResponse.success = false;

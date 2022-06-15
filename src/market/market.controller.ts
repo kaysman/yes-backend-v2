@@ -1,4 +1,5 @@
 import { ApiResponse } from 'src/shared/dto/api_response.dto';
+import { PaginationDTO } from 'src/shared/dto/pagination.dto';
 
 import {
   Body,
@@ -20,11 +21,11 @@ import { MarketService } from './market.service';
 export class MarketController {
   constructor(private markerService: MarketService) {}
 
-  @Get('all')
-  async getMarkets() {
+  @Get('')
+  async getMarkets(@Query() dto: PaginationDTO) {
     var apiResponse = new ApiResponse();
     try {
-      var res = await this.markerService.getAllMarkets();
+      var res = await this.markerService.getMarkets(dto);
       apiResponse.responseCode = 200;
       apiResponse.success = true;
       apiResponse.data = res;
@@ -43,24 +44,6 @@ export class MarketController {
     var apiResponse = new ApiResponse();
     try {
       var res = await this.markerService.getMarketById(marketId);
-      apiResponse.success = true;
-      apiResponse.responseCode = 200;
-      apiResponse.data = res;
-      apiResponse.message = '';
-    } catch (error) {
-      apiResponse.responseCode = error.responseCode;
-      apiResponse.success = false;
-      apiResponse.message = error.toString();
-    } finally {
-      return apiResponse;
-    }
-  }
-
-  @Get('')
-  async searchMarket(@Query() search) {
-    var apiResponse = new ApiResponse();
-    try {
-      var res = await this.markerService.searchMarket(search.search);
       apiResponse.success = true;
       apiResponse.responseCode = 200;
       apiResponse.data = res;

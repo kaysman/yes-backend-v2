@@ -1,4 +1,5 @@
 import { PrismaService } from 'src/prisma/prisma.service';
+import { PaginationDTO } from 'src/shared/dto/pagination.dto';
 
 import {
   BadRequestException,
@@ -13,18 +14,29 @@ import { GetFilterDTO } from './dto/get-filter-dto';
 export class FilterService {
   constructor(private prisma: PrismaService) {}
 
-  async getAllFilters() {
+  async getFilters(dto: PaginationDTO) {
     try {
-      var allFilters = await this.prisma.filter.findMany();
-      return allFilters;
+      let { take, search, lastId: cursor } = dto;
+      var filters;
+      if (search) {
+        filters = await this.searchFilter(search, take, cursor);
+      } else {
+        filters = await this.prisma.filter.findMany({
+          take,
+          cursor: cursor ? { id: cursor } : undefined,
+        });
+      }
+      return filters;
     } catch (error) {
       throw error;
     }
   }
 
-  async searchFilter(query: string) {
+  async searchFilter(query: string, take: number, cursor?: number) {
     try {
       return await this.prisma.filter.findMany({
+        take: take,
+        cursor: cursor ? { id: cursor } : undefined,
         where: {
           OR: [
             {
@@ -50,7 +62,7 @@ export class FilterService {
   async getFilterById(filterId: number) {
     try {
       var getFilter = await this.prisma.filter.findUnique({
-        where: { id: filterId }
+        where: { id: filterId },
       });
       if (getFilter) {
         let allProducts = [];
@@ -58,26 +70,26 @@ export class FilterService {
           where: {
             OR: [
               {
-                color_id: filterId
+                color_id: filterId,
               },
               {
                 gender_id: filterId,
-              }
+              },
             ],
-          }
+          },
         });
 
         var productsFromSize = await this.prisma.filter_Product.findMany({
           where: {
-            size_id: filterId
-          }, include: {product: true}
+            size_id: filterId,
+          },
+          include: { product: true },
         });
 
         allProducts.concat(productsFromColorAndGender);
         allProducts.concat(productsFromSize);
-        
-        
-        let { name_tm, name_ru, type} = getFilter;
+
+        let { name_tm, name_ru, type } = getFilter;
         var filter = new GetFilterDTO();
         filter.name_ru = name_ru;
         filter.name_tm = name_tm;
@@ -85,7 +97,6 @@ export class FilterService {
         filter.products = allProducts;
 
         return filter;
-
       } else return new NotFoundException('filter cannot be found');
     } catch (error) {
       throw error;

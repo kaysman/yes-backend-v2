@@ -1,10 +1,12 @@
 import { PrismaService } from 'src/prisma/prisma.service';
+import { PaginationDTO } from 'src/shared/dto/pagination.dto';
 
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Category } from '@prisma/client';
 
 import { CreateCategoryDTO } from './dto/create-category.dto';
 
@@ -12,20 +14,31 @@ import { CreateCategoryDTO } from './dto/create-category.dto';
 export class CategoryService {
   constructor(private prisma: PrismaService) {}
 
-  async getAllCategories() {
+  async getCategories(dto: PaginationDTO) {
     try {
-      var allCategories = await this.prisma.category.findMany({
-        include: { subcategories: true },
-      });
-      return allCategories;
+      let { take, search, lastId: cursor } = dto;
+      var categories: Category[];
+
+      if (search) {
+        categories = await this.searchCategory(search, take, cursor);
+      } else {
+        categories = await this.prisma.category.findMany({
+          where: {parentId: null},
+          include: { subcategories: true },
+        });
+      }
+
+      return categories;
     } catch (error) {
       throw error;
     }
   }
 
-  async searchCategory(query: string) {
+  async searchCategory(query: string, take: number, cursor?: number) {
     try {
       return await this.prisma.category.findMany({
+        take: take,
+        cursor: cursor ? { id: cursor } : undefined,
         where: {
           OR: [
             {
