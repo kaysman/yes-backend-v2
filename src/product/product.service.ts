@@ -253,8 +253,6 @@ export class ProductService {
         // ----------------- end --------------------
 
         
-
-        var createdProducts = [];
         for (const r of Array.from({length: worksheet.rowCount - 1 },(v,k)=>k+2)) {
           let row = worksheet.getRow(r);
 
@@ -262,24 +260,26 @@ export class ProductService {
           product.name_tm = row.values[1].trim();
           product.name_ru = row.values[2].trim();
           product.ourPrice = Number(row.values[3]);
-          console.log(product.ourPrice);
-          
-          product.marketPrice = Number(row.values[4].trim());
-          product.color_id = Number(row.values[5].trim());
-          product.gender_id = Number(row.values[6].trim());
+          product.marketPrice = Number(row.values[4]);
+          product.color_id = Number(row.values[5]);
+          product.gender_id = Number(row.values[6]);
           product.code = row.values[8].trim();
           product.description_tm = row.values[9].trim();
           product.description_ru = row.values[10].trim();
-          product.brand_id = Number(row.values[11].trim());
-          product.category_id = Number(row.values[12].trim());
-          product.market_id = Number(row.values[13].trim());
-
-          // var newProduct = await this.prisma.product.create({
-          //   data: product
-          // });
+          product.brand_id = Number(row.values[11]);
+          product.category_id = Number(row.values[12]);
+          product.market_id = Number(row.values[13]);
+          
           try {
-            createdProducts.push();
-          } catch (error) {}
+            this.prisma.product.createMany({
+              data: product
+            }).then((v) => {
+              console.log(v);
+              console.log(worksheet.rowCount + " products created");
+            });  
+          } catch (error) {
+            console.log(error);
+          }
         }
       });
     } catch (error) {

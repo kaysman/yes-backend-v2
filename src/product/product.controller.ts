@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Post,
   Query,
+  Request,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -78,7 +79,7 @@ export class ProductController {
 
   @Post('uploadExcel')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadExcel(@UploadedFile() file: Express.Multer.File) {
+  async uploadExcel(@Request() req: any, @UploadedFile() file: Express.Multer.File,) {
     var apiResponse = new ApiResponse();
     try {
       var res = await this.productService.uploadExcel(file);
