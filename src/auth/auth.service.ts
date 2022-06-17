@@ -1,9 +1,6 @@
 import * as argon from 'argon2';
 import { PrismaService } from 'src/prisma/prisma.service';
-import {
-  hashString,
-  writeFileFromBase64,
-} from 'src/shared/helper';
+import { hashString } from 'src/shared/helper';
 import {
   CreateUserDTO,
   LoginDTO,
@@ -34,10 +31,10 @@ export class AuthService {
         var hashedPassword = await hashString(dto.password);
         dto.password = hashedPassword;
         // TODO: handle image storing/accessing 
-        if (dto.image) {
-          var fileName = dto.phoneNumber;
-          await writeFileFromBase64(dto.image, fileName);
-        }
+        // if (dto.image) {
+        //   var fileName = dto.phoneNumber;
+        //   await writeFileFromBase64(dto.image, fileName);
+        // }
 
         var newUser = await this.prisma.user.create({
           data: dto

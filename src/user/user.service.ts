@@ -1,7 +1,10 @@
 import { PrismaService } from 'src/prisma/prisma.service';
 import { hashString } from 'src/shared/helper';
 
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { CreateUserDTO } from './dto/create-user.dto';
 import { GetUserByPhoneNumberDTO } from './dto/get-user-phone.dto';
@@ -53,6 +56,22 @@ export class UserService {
       });
       delete user.password;
       return user;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getUserById(id: number) {
+    try {
+      var user = await this.prisma.user.findFirst({
+        where: { id: id },
+      });
+      if (user) {
+        delete user.password;
+        return user;
+      } else {
+        throw new NotFoundException();
+      }
     } catch (error) {
       throw error;
     }

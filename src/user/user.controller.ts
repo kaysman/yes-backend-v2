@@ -1,9 +1,12 @@
+import { ApiResponse } from 'src/shared/dto/api_response.dto';
 import { writeFileFromBase64 } from 'src/shared/helper';
 
 import {
   Body,
   Controller,
   Get,
+  Param,
+  ParseIntPipe,
   Post,
   UseInterceptors,
 } from '@nestjs/common';
@@ -29,9 +32,26 @@ export class UserController {
     return await this.userService.getUserByPhoneNumber(dto)
   }
 
+  @Get('/:id')
+  async getUserById(@Param('id', ParseIntPipe) id: number) {
+    var apiResponse = new ApiResponse();
+    try {
+      var res = await this.userService.getUserById(id);
+      apiResponse.success = true;
+      apiResponse.responseCode = 200;
+      apiResponse.data = res;
+      apiResponse.message = '';
+    } catch (error) {
+      apiResponse.responseCode = error.responseCode;
+      apiResponse.success = false;
+      apiResponse.message = error.toString();
+    } finally {
+      return apiResponse;
+    }
+  }
+
   @Post('upload/image')
-  async uploadImage65(@Body() dto: UploadImageDTO){
-    
+  async uploadImage65(@Body() dto: UploadImageDTO){    
     return writeFileFromBase64(dto.image, 'photo');
   }
 }
