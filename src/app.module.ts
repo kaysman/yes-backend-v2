@@ -17,7 +17,6 @@ import { FilterService } from './filter/filter.service';
 import { MarketController } from './market/market.controller';
 import { MarketModule } from './market/market.module';
 import { MarketService } from './market/market.service';
-import { MenuCategoryModule } from './menu-category/menu-category.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductController } from './product/product.controller';
 import { ProductModule } from './product/product.module';
@@ -38,7 +37,6 @@ import { UserService } from './user/user.service';
     PrismaModule,
     MarketModule,
     CategoryModule,
-    MenuCategoryModule,
     BrandModule,
     ProductModule,
     FilterModule,
