@@ -9,6 +9,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 
 import { JwtPayload } from './jwt-payload.dto';
@@ -16,15 +17,15 @@ import { JwtPayload } from './jwt-payload.dto';
 @Injectable()
   export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       
-      constructor (private userService: UserService) {
+      constructor (private userService: UserService, configService: ConfigService) {
+        
           super({
-              secretOrKey: 'topSecret51',
+              secretOrKey: configService.get('JWT_SECRET'),
               jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
           });
       }
   
       async validate(payload: JwtPayload, done: VerifiedCallback) {
-          
           var user = await this.userService.getUserByPhoneNumber({phoneNumber: payload.username});
           if (!user) {
               done(new UnauthorizedException(), false);
@@ -32,4 +33,4 @@ import { JwtPayload } from './jwt-payload.dto';
           return done(null, user);
       }
   
-  } 
+  }

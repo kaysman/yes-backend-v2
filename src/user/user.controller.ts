@@ -5,13 +5,16 @@ import {
   Controller,
   Get,
   Post,
+  UseInterceptors,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 
 import { UploadImageDTO } from './dto';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { GetUserByPhoneNumberDTO } from './dto/get-user-phone.dto';
 import { UserService } from './user.service';
 
+@UseInterceptors(AuthGuard('jwt'))
 @Controller('users')
 export class UserController {
   constructor(private userService: UserService) {}
