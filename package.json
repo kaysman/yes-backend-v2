@@ -35,6 +35,7 @@
     "class-validator": "^0.13.2",
     "exceljs": "^4.3.0",
     "jwt": "^0.2.0",
+    "node-base64": "^0.0.1",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
     "reflect-metadata": "^0.1.13",

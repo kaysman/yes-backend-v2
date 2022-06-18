@@ -192,3 +192,10 @@ model Filter_Product {
 
   @@id([size_id, product_id])
 }
+
+model HomeGadget {
+  id Int @id @default(autoincrement())
+  type String
+  apiUrls String
+  swiperBannersCount Int?
+}
