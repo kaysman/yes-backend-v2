@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 import { HomeGadgetType } from "src/shared/enums/home_gadget.enum";
 
 export class CreateHomeGadget {
@@ -26,7 +26,7 @@ export class CreateHomeGadget {
     // when type is POPULAR
     @IsOptional()
     @IsString()
-    brandIds?: string[];
+    brandIds?: string;
 
 
     // when type is 
@@ -35,8 +35,7 @@ export class CreateHomeGadget {
     @IsString()
     productIds?: string;
 
-}
+    @IsOptional()
+    queue: number = 1;
 
-export class ApiUrl {
-    apiUrl: number;
 }

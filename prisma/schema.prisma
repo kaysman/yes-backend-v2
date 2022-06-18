@@ -197,5 +197,9 @@ model HomeGadget {
   id Int @id @default(autoincrement())
   type String
   apiUrls String
+  imageUrls String
+  brandIds String?
+  productIds String?
   swiperBannersCount Int?
+  queue Int
 }
