@@ -3,9 +3,11 @@ import { ApiResponse } from 'src/shared/dto/api_response.dto';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Query,
   Request,
@@ -20,6 +22,7 @@ import { FilterForProductDTO } from './dto/filter-for-product.dto';
 import { ProductService } from './product.service';
 import { diskStorage } from 'multer';
 import { editFileName, imageFileFilter } from 'src/shared/helper';
+import { UpdateProductDTO } from './dto/update-product.dto';
 
 @Controller('products')
 export class ProductController {
@@ -97,6 +100,42 @@ export class ProductController {
       apiResponse.responseCode = error.responseCode;
       apiResponse.success = false;
       apiResponse.message = error?.toString();
+    } finally {
+      return apiResponse;
+    }
+  }
+
+  @Patch('update')
+  async updateProduct(@Body() dto: UpdateProductDTO) {
+    var apiResponse = new ApiResponse();
+    try {
+      var res = await this.productService.updateProduct(dto);
+      apiResponse.responseCode = 200;
+      apiResponse.success = true;
+      apiResponse.data = res;
+      apiResponse.message = '';
+    } catch (error) {
+      apiResponse.responseCode = error.responseCode;
+      apiResponse.success = false;
+      apiResponse.message = error.toString();
+    } finally {
+      return apiResponse;
+    }
+  }
+
+  @Delete(':id')
+  async deleteProduct(@Param('id', ParseIntPipe) id: number) {
+    var apiResponse = new ApiResponse();
+    try {
+      var res = await this.productService.deleteProduct(id);
+      apiResponse.responseCode = 200;
+      apiResponse.success = true;
+      apiResponse.data = res;
+      apiResponse.message = '';
+    } catch (error) {
+      apiResponse.responseCode = error.responseCode;
+      apiResponse.success = false;
+      apiResponse.message = error.toString();
     } finally {
       return apiResponse;
     }

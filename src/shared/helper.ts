@@ -48,6 +48,20 @@ export const saveFile = (filename, buffer) => {
       
     });
   } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+/*
+  Delete file from /public
+*/
+export const deleteFile = (filename) => {
+  const fs = require('fs');
+  try {
+    fs.unlinkSync('./public/' + filename);
+  } catch (error) {
+    console.log(error);
     throw error;
   }
 }

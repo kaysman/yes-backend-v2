@@ -11,8 +11,9 @@ import {
 } from './dto/create-product.dto';
 import { FilterForProductDTO } from './dto/filter-for-product.dto';
 import { GetProductDTO } from './dto/get-product-dto';
-import { editFileName, publicFilePath, saveFile } from 'src/shared/helper';
+import { deleteFile, editFileName, publicFilePath, saveFile } from 'src/shared/helper';
 import { RuleTester } from 'eslint';
+import { UpdateProductDTO } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductService {
@@ -66,10 +67,12 @@ export class ProductService {
         },
       });
 
-      for (let product of products){
-        var image = await this.prisma.product_Images.findFirst({where: {
-          productId: product.id,
-        }})
+      for (let product of products) {
+        var image = await this.prisma.product_Images.findFirst({
+          where: {
+            productId: product.id,
+          }
+        })
         product["images"] = [image]
       }
 
@@ -375,6 +378,64 @@ export class ProductService {
     }
   }
 
+  async updateProduct(dto: UpdateProductDTO) {
+    try {
+
+      let {
+        id, 
+        name_tm, 
+        name_ru, 
+        ourPrice, 
+        marketPrice, 
+        color_id, 
+        gender_id, 
+        description_tm, 
+        description_ru, 
+        brand_id, 
+        category_id, 
+        market_id, sizes,
+      } = dto
+      
+      var getProduct = await this.prisma.product.findUnique({
+        where: { id: id }
+      });
+      if (getProduct) {
+        
+        var res = await this.prisma.product.update({
+          where: {id: id},
+          data: {
+            name_tm: name_tm,
+            name_ru: name_ru,
+            ourPrice: ourPrice,
+            marketPrice: marketPrice,
+            color_id: color_id,
+            gender_id: gender_id,
+            description_tm: description_tm,
+            description_ru: description_ru,
+            brand_id: brand_id,
+            category_id: category_id,
+            market_id: market_id,
+          },
+          include: {
+            category: true,
+            color: true,
+            gender: true,
+            brand: true,
+            market: true,
+            images: true,
+            sizes: true,
+          },
+        });
+
+        return res;
+      } else throw new NotFoundException();
+
+
+    } catch (error) {
+      throw error;
+
+    }
+  }
 
   async deleteProduct(id: number) {
     try {
@@ -382,8 +443,11 @@ export class ProductService {
         where: { id: id }
       });
       if (getProduct) {
-        var res = await this.prisma.product.delete({where: {id: id}});
-        return res;
+        var res = await this.prisma.product.delete({ where: { id: id }, include: { images: true } });
+        for (let image of res.images) {
+          await deleteFile(image.image);
+        }
+        return true;
       } else throw new NotFoundException();
     } catch (error) {
       throw error;

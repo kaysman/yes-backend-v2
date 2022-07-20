@@ -58,8 +58,7 @@ model Category {
   homeSquareSizedCategory HomeSquareSizedCategory[]
   categoryToBag           CategoryToBag[]
 
-
-  products                 Product[]
+  products Product[]
 }
 
 model MenuCategory {
@@ -69,7 +68,6 @@ model MenuCategory {
   backroundImage String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-
 }
 
 model HomeSquareSizedCategory {
@@ -99,7 +97,7 @@ model Brand {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  products   Product[]
+  products Product[]
 }
 
 model Promotion {
@@ -131,39 +129,31 @@ model User {
   role        RoleType    @default(END_USER)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
-
-
 }
 
 model Product {
-  id             Int      @id @default(autoincrement())
-  name_tm        String
-  name_ru        String
-  ourPrice       Int
-  marketPrice    Int
-  color_id       Int
-  color          Filter @relation("color", fields: [color_id], references: [id])
-
-  gender_id      Int
-  gender         Filter @relation("gender", fields: [gender_id], references: [id]) 
-  
+  id          Int    @id @default(autoincrement())
+  name_tm     String
+  name_ru     String
+  ourPrice    Int
+  marketPrice Int
+  color_id    Int
+  color       Filter @relation("color", fields: [color_id], references: [id], onDelete: Cascade)
+  gender_id Int
+  gender    Filter @relation("gender", fields: [gender_id], references: [id], onDelete: Cascade)
   code           String   @unique
   description_tm String?
   description_ru String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-
   brand_id Int
   brand    Brand @relation(fields: [brand_id], references: [id], onDelete: Cascade)
-
   category_id Int
   category    Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
-
   market_id Int
   market    Market @relation(fields: [market_id], references: [id], onDelete: Cascade)
-
   images Product_Images[]
-  sizes Product_Sizes[]
+  sizes  Product_Sizes[]
 }
 
 model Filter {
@@ -173,9 +163,8 @@ model Filter {
   type      FilterType
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
-
   color_products  Product[] @relation("color")
-  gender_products  Product[] @relation("gender")
+  gender_products Product[] @relation("gender")
 }
 
 model Product_Images {
@@ -194,17 +183,16 @@ model Product_Sizes {
   product_id Int
   quantity   Int      @default(0)
   product    Product  @relation(fields: [product_id], references: [id], onDelete: Cascade)
-
   @@id([size_id, product_id])
 }
 
 model HomeGadget {
-  id Int @id @default(autoincrement())
-  type String
-  apiUrls String
-  imageUrls String
-  brandIds String?
-  productIds String?
+  id                 Int     @id @default(autoincrement())
+  type               String
+  apiUrls            String
+  imageUrls          String
+  brandIds           String?
+  productIds         String?
   swiperBannersCount Int?
-  queue Int
+  queue              Int
 }
