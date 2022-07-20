@@ -3,12 +3,14 @@ import { PaginationDTO } from 'src/shared/dto/pagination.dto';
 
 import {
   BadRequestException,
+  Body,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { Category } from '@prisma/client';
 
 import { CreateCategoryDTO } from './dto/create-category.dto';
+import { UpdateCategoryDTO } from './dto/update-category.dto';
 
 @Injectable()
 export class CategoryService {
@@ -106,7 +108,76 @@ export class CategoryService {
         });
         return newCategory;
       } else {
-        throw new BadRequestException();
+        throw new Error("category already exists");
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateCategory(dto: UpdateCategoryDTO) {
+    try {
+
+      let {
+        id,
+        title_tm,
+        title_ru,
+        description_tm,
+        description_ru,
+        parentId
+      } = dto
+      
+      var category = await this.prisma.category.findFirst({
+        where: {id: id},
+      });
+
+      if (category) {
+        
+        if (!category.parentId && parentId) {
+          /// if it has no parentId, it is parent (main category). 
+          /// So let's not allow parents to update main categories for now.
+          /// To allow it, we have to ask where to 
+          /// transfer this categories' products.
+          throw new BadRequestException("This feature is not available right now. Feature to be released soon.");
+        }
+
+        var updated = await this.prisma.category.update({
+          where: {id: id},
+          data: {
+            title_tm: title_tm,
+            title_ru: title_ru,
+            description_ru: description_ru,
+            description_tm: description_tm,
+            parentId: parentId,
+          },
+          include: { subcategories: true },
+        });
+        return updated;
+      } else {
+        throw new NotFoundException();
+      }
+
+    } catch (error) {
+      throw error;
+    }
+  }
+
+
+  async deleteCategory(id: number) {
+    try {
+      var category = await this.prisma.category.findFirst({
+        where: {id: id},
+      });
+      if (category) {
+
+        if (!category.parentId){
+          await this.prisma.category.deleteMany({where: {parentId: category.id}});
+        }
+
+        var res = await this.prisma.category.delete({where: {id: id}});
+        return true;
+      } else {
+        throw new NotFoundException();
       }
     } catch (error) {
       throw error;
