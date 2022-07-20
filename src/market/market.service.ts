@@ -1,9 +1,5 @@
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PaginationDTO } from 'src/shared/dto/pagination.dto';
-import {
-  getImagePath,
-  writeFileFromBase64,
-} from 'src/shared/helper';
 
 import {
   ForbiddenException,
@@ -98,11 +94,6 @@ export class MarketService {
       if (checkMarket) {
         throw new ForbiddenException('market already exists');
       } else {
-        // if (dto.logo) {
-        //   var marketName = dto.title;
-        //   await writeFileFromBase64(dto.logo, marketName);
-        // }
-        // dto.logo = getImagePath(marketName);
         var newMarket = await this.prisma.market.create({
           data: { ...dto },
         });
@@ -113,19 +104,28 @@ export class MarketService {
     }
   }
 
-  async updateMarket(id: number, dto: UpdateMarketDTO) {
+  async updateMarket(dto: UpdateMarketDTO) {
     try {
+      let {id} = dto
       if (await this.prisma.market.findFirst({ where: { id: id } })) {
-        var marketName = dto.title;
-        if (dto.logo) {
-          await writeFileFromBase64(dto.logo, marketName);
-        }
-        dto.logo = getImagePath(marketName);
         var market = await this.prisma.market.update({
           where: { id: id },
           data: dto,
         });
         return market;
+      } else {
+        throw new NotFoundException();
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deleteMarket(id: number) {
+    try {
+      if (await this.prisma.market.findFirst({where: {id: id}})){
+        var res = await this.prisma.market.delete({where: {id: id}});
+        return true;
       } else {
         throw new NotFoundException();
       }

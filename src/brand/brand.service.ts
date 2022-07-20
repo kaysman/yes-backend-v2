@@ -1,7 +1,10 @@
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PaginationDTO } from 'src/shared/dto/pagination.dto';
 import {
+  editFileName,
   getImagePath,
+  publicFilePath,
+  saveFile,
   writeFileFromBase64,
 } from 'src/shared/helper';
 
@@ -67,20 +70,18 @@ export class BrandService {
     }
   }
 
-  async createBrand(dto: CreateBrandDTO) {
+  async createBrand(dto: CreateBrandDTO, file: Express.Multer.File) {
     try {
-      var checkBrand = await this.prisma.brand.findFirst({
-        where: {
-          name: dto.name,
-        },
-      });
-      if (!checkBrand) {
+      if (!await this.prisma.brand.findFirst({
+        where: {name: dto.name},
+      })) {
+        var filename = editFileName(file);
+        await saveFile(filename, file.buffer);
         var newBrand = await this.prisma.brand.create({
           data: {
             name: dto.name,
-            vip: Boolean(dto.vip),
-            logo: dto.logo,
-            image: dto.image,
+            logo: publicFilePath(filename),
+            vip: Boolean(dto.vip)
           },
         });
         return newBrand;

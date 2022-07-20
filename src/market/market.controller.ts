@@ -4,6 +4,7 @@ import { PaginationDTO } from 'src/shared/dto/pagination.dto';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -75,23 +76,39 @@ export class MarketController {
     }
   }
 
-  @Patch('update/:id')
-  async updateMarket(
-    @Body() dto: UpdateMarketDTO,
-    @Param('id', ParseIntPipe) marketId: number,
-  ) {
+  @Patch('update')
+  async updateMarket(@Body() dto: UpdateMarketDTO) {
     var apiResponse = new ApiResponse();
     try {
-      var res = await this.markerService.updateMarket(marketId, dto);
+      var res = await this.markerService.updateMarket(dto);
       apiResponse.success = true;
       apiResponse.responseCode = 200;
       apiResponse.data = res;
-      apiResponse.message = 'Market with id(' + marketId + ') updated successfully';
+      apiResponse.message = `Market with id ${dto.id} updated successfully`;
     } catch (error) {
       apiResponse.success = false;
       apiResponse.responseCode = error.responseCode;
       apiResponse.message = error?.toString();
+    } finally {
+      return apiResponse;
+    } 
+  }
+
+  @Delete(':id')
+  async deleteMarket(@Param('id', ParseIntPipe) id: number) {
+    var apiResponse = new ApiResponse();
+    try {
+      var res = await this.markerService.deleteMarket(id);
+      apiResponse.success = true;
+      apiResponse.responseCode = 200;
+      apiResponse.data = res;
+      apiResponse.message = `Market with id ${id} deleted.`;
+    } catch (error) {
+      apiResponse.success = false;
+      apiResponse.responseCode = error.responseCode;
+      apiResponse.message = error?.toString();
+    } finally {
+      return apiResponse;
     }
-    return apiResponse;
   }
 }

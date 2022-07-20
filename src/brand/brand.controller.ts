@@ -10,11 +10,14 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 
 import { BrandService } from './brand.service';
 import { CreateBrandDTO } from './dto/create-brand.dto';
 import { UpdateBrandDTO } from './dto/update-brand.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('brands')
 export class BrandController {
@@ -57,10 +60,11 @@ export class BrandController {
   }
 
   @Post('create')
-  async createBrand(@Body() dto: CreateBrandDTO) {
+  @UseInterceptors(FileInterceptor('logo'))
+  async createBrand(@Body() dto: CreateBrandDTO, @UploadedFile() file: Express.Multer.File) {
     var apiResponse = new ApiResponse();
     try {
-      var res = await this.brandService.createBrand(dto);
+      var res = await this.brandService.createBrand(dto, file);
       apiResponse.responseCode = 200;
       apiResponse.success = true;
       apiResponse.data = res;

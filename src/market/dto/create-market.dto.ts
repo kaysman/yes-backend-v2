@@ -4,15 +4,11 @@ import {
   IsString,
 } from 'class-validator';
 
-export class CreateMarketDTO{
+export class CreateMarketDTO {
 
     @IsNotEmpty()
     @IsString()
     title: string
-
-    @IsString()
-    @IsOptional()
-    logo?: string
 
     @IsString()
     @IsOptional()
