@@ -98,11 +98,11 @@ export class MarketService {
       if (checkMarket) {
         throw new ForbiddenException('market already exists');
       } else {
-        if (dto.logo) {
-          var marketName = dto.title;
-          await writeFileFromBase64(dto.logo, marketName);
-        }
-        dto.logo = getImagePath(marketName);
+        // if (dto.logo) {
+        //   var marketName = dto.title;
+        //   await writeFileFromBase64(dto.logo, marketName);
+        // }
+        // dto.logo = getImagePath(marketName);
         var newMarket = await this.prisma.market.create({
           data: { ...dto },
         });

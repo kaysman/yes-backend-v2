@@ -142,8 +142,11 @@ model Product {
   ourPrice       Int
   marketPrice    Int
   color_id       Int
-  gender_id      Int 
-  quantity       Int      @default(0)
+  color          Filter @relation("color", fields: [color_id], references: [id])
+
+  gender_id      Int
+  gender         Filter @relation("gender", fields: [gender_id], references: [id]) 
+  
   code           String   @unique
   description_tm String?
   description_ru String?
@@ -159,8 +162,8 @@ model Product {
   market_id Int
   market    Market @relation(fields: [market_id], references: [id], onDelete: Cascade)
 
-  product_Images Product_Images[]
-  filter_Product Filter_Product[]
+  images Product_Images[]
+  sizes Product_Sizes[]
 }
 
 model Filter {
@@ -170,6 +173,9 @@ model Filter {
   type      FilterType
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+
+  color_products  Product[] @relation("color")
+  gender_products  Product[] @relation("gender")
 }
 
 model Product_Images {
@@ -179,10 +185,9 @@ model Product_Images {
   updatedAt DateTime @updatedAt
   productId Int
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-
 }
 
-model Filter_Product {
+model Product_Sizes {
   size_id    Int
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

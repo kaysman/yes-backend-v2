@@ -36,6 +36,8 @@ export class CreateHomeGadget {
     productIds?: string;
 
     @IsOptional()
+    @Type(() => Number)
+    @IsNumber()
     queue: number = 1;
 
 }

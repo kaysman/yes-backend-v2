@@ -1,17 +1,64 @@
 import * as argon from 'argon2';
+import { extname } from 'path';
 
 export async function hashString(unHashedPassword: string): Promise<string> {
   return await argon.hash(unHashedPassword);
 }
 
 const webp = require('webp-converter');
-const fs = require('fs');
 
+
+export function publicFilePath(filename) {
+  return 'public/' + filename;
+}
+
+/* 
+  Helper function to edit filename before saving.
+*/
+export const editFileName = (file) => {
+  const name = file.originalname.split('.')[0].toLowerCase();
+  const fileExtName = extname(file.originalname);
+  const randomName = Array(4)
+    .fill(null)
+    .map(() => Math.round(Math.random() * 16).toString(16))
+    .join('');
+  return `${name}-${randomName}${fileExtName}`;
+};
+
+/*
+  Image Filter
+*/
+export const imageFileFilter = (req, file, callback) => {
+  if (!file.originalname.toLowerCase().match(/\.(jpg|jpeg|png|gif)$/)) {
+    return callback(new Error('Only image files are allowed!'), false);
+  }
+  callback(null, true);
+};
+
+/*
+  Write file into /public
+*/
+export const saveFile = (filename, buffer) => {
+  const fs = require('fs');
+  try {
+    // { mode: '0o666' }
+    fs.writeFile('./public/' + filename, buffer, function (err){
+      if (err) throw err;
+      console.log(`${filename} saved.`);
+      
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+// TODO 
 export function getImagePath(fileName) {
   return 'assets/images/' + fileName + '.webp';
 }
 
 export function writeFileFromBase64(base64String: string, fileName: string) {
+  const fs = require('fs');
   fs.writeFile(getImagePath(fileName), base64String, { encoding: 'base64' }, function (err) {
     if (err) {
       throw err;
@@ -22,6 +69,7 @@ export function writeFileFromBase64(base64String: string, fileName: string) {
 }
 
 export function get_webpbase64(path) {
+  const fs = require('fs');
   fs.readFile(path, function (error, data) {
     if (error) {
       throw error;

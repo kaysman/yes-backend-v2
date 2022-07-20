@@ -10,17 +10,20 @@ import {
   Query,
   Request,
   UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
 import { CreateProductDTO } from './dto/create-product.dto';
 import { FilterForProductDTO } from './dto/filter-for-product.dto';
 import { ProductService } from './product.service';
+import { diskStorage } from 'multer';
+import { editFileName, imageFileFilter } from 'src/shared/helper';
 
 @Controller('products')
 export class ProductController {
-  constructor(private productService: ProductService) {}
+  constructor(private productService: ProductService) { }
 
   @Get('')
   async getProducts(@Query() filter: FilterForProductDTO) {
@@ -60,10 +63,13 @@ export class ProductController {
 
 
   @Post('create')
-  async createProduct(@Body() dto: CreateProductDTO) {
+  @UseInterceptors(FilesInterceptor('images', 10, {
+    fileFilter: imageFileFilter,
+  }))
+  async createProduct(@Body() dto: CreateProductDTO, @UploadedFiles() files: Express.Multer.File[]) {
     var apiResponse = new ApiResponse();
     try {
-      var res = await this.productService.createProduct(dto);
+      var res = await this.productService.createProduct(files, dto);
       apiResponse.responseCode = 200;
       apiResponse.success = true;
       apiResponse.data = res;

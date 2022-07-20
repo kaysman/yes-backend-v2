@@ -68,8 +68,13 @@ export class CreateProductDTO {
 }
 
 export class SizeItemDTO {
-
+  @IsNotEmpty()
+  @IsNumber()
+  @Type(() => Number)
   size_id: number;
 
-  count: number;
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  count: number = 1;
 }

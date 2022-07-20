@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { MulterModule } from '@nestjs/platform-express';
 
 import { AuthController } from './auth/auth.controller';
 import { AuthModule } from './auth/auth.module';
@@ -22,11 +23,6 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ProductController } from './product/product.controller';
 import { ProductModule } from './product/product.module';
 import { ProductService } from './product/product.service';
-import {
-  ProductImagesController,
-} from './product_images/product_images.controller';
-import { ProductImagesModule } from './product_images/product_images.module';
-import { ProductImagesService } from './product_images/product_images.service';
 import { UserController } from './user/user.controller';
 import { UserModule } from './user/user.module';
 import { UserService } from './user/user.service';
@@ -41,9 +37,9 @@ import { UserService } from './user/user.service';
     BrandModule,
     ProductModule,
     FilterModule,
-    ProductImagesModule,
     ConfigModule.forRoot({ isGlobal: true }),
     GadgetModule,
+    MulterModule.register(),
   ],
   controllers: [
     AuthController,
@@ -53,7 +49,6 @@ import { UserService } from './user/user.service';
     ProductController,
     BrandController,
     FilterController,
-    ProductImagesController
   ],
   providers: [
     AuthService,
@@ -63,7 +58,6 @@ import { UserService } from './user/user.service';
     BrandService,
     ProductService,
     FilterService,
-    ProductImagesService,
     JwtService
   ],
 })

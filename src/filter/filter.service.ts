@@ -79,7 +79,7 @@ export class FilterService {
           },
         });
 
-        var productsFromSize = await this.prisma.filter_Product.findMany({
+        var productsFromSize = await this.prisma.product_Sizes.findMany({
           where: {
             size_id: filterId,
           },

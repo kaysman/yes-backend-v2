@@ -31,10 +31,6 @@ export class GadgetController {
   @Post('create/home')
   @UseInterceptors(FilesInterceptor('files'))
   async createGadgetForHome(@UploadedFiles() files: Array<Express.Multer.File>, @Body() dto: CreateHomeGadget,) {
-    console.log(files);
-    console.log(dto);
-    
-    
     var apiResponse = new ApiResponse();
     try {
       var res = await this.gadgetService.createGadgetForHome(files, dto);

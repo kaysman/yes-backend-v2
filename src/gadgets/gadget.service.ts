@@ -88,7 +88,7 @@ export class GadgetService {
                 brandIds: dto.brandIds,
                 productIds: dto.productIds,
                 swiperBannersCount: dto.swiperBannersCount,
-                queue: 1,
+                queue: dto.queue,
             }});
         } catch (error) {
             throw error;

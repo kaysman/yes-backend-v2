@@ -83,12 +83,6 @@ export class BrandService {
             image: dto.image,
           },
         });
-
-        if (dto.image) {
-          var brandName = dto.name;
-          await writeFileFromBase64(dto.image, brandName);
-          newBrand.image = getImagePath(brandName);
-        }
         return newBrand;
       } else return new BadRequestException('brand already exists');
     } catch (error) {
