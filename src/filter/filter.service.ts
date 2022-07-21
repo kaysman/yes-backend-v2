@@ -9,6 +9,7 @@ import {
 
 import { CreateFilterDTO } from './dto/create-filter.dto';
 import { GetFilterDTO } from './dto/get-filter-dto';
+import { UpdateFilterDTO } from './dto/update-filter.dto';
 
 @Injectable()
 export class FilterService {
@@ -112,12 +113,35 @@ export class FilterService {
       });
       if (!checkFilter) {
         var newFilter = await this.prisma.filter.create({
-          data: {
-            ...dto,
-          },
+          data: {...dto},
         });
         return newFilter;
       } else return new BadRequestException('this filter already exists');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateFilter(dto: UpdateFilterDTO) {
+    try {
+      if (await this.prisma.filter.findFirst({where:{id: dto.id}})) {
+        return await this.prisma.filter.update({where: {id: dto.id}, data: dto});
+      }else {
+        throw new NotFoundException()
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deleteFilter(id: number) {
+    try {
+      if (await this.prisma.filter.findFirst({where:{id: id}})) {
+        await this.prisma.filter.delete({where: {id: id}});
+        return true;
+      }else {
+        throw new NotFoundException()
+      }
     } catch (error) {
       throw error;
     }
