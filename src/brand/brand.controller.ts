@@ -4,6 +4,7 @@ import { PaginationDTO } from 'src/shared/dto/pagination.dto';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -78,18 +79,37 @@ export class BrandController {
     }
   }
 
-  @Patch('update/:id')
+  @Patch('update')
+  @UseInterceptors(FileInterceptor('logo'))
   async updateBrand(
     @Body() dto: UpdateBrandDTO,
-    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() file: Express.Multer.File,
   ) {
     var apiResponse = new ApiResponse();
     try {
-      var res = await this.brandService.updateBrand(id, dto);
+      var res = await this.brandService.updateBrand(file, dto);
       apiResponse.responseCode = 200;
       apiResponse.success = true;
       apiResponse.data = res;
-      apiResponse.message = 'Brand id:' + id + ' updated';
+      apiResponse.message = `Brand id:${dto.id} updated`;
+    } catch (error) {
+      apiResponse.responseCode = error.responseCode;
+      apiResponse.success = false;
+      apiResponse.message = error.toString();
+    } finally {
+      return apiResponse;
+    }
+  }
+
+  @Delete(':id')
+  async deleteBrand(@Param('id', ParseIntPipe) id: number){
+    var apiResponse = new ApiResponse();
+    try {
+      var res = await this.brandService.deleteBrand(id);
+      apiResponse.responseCode = 200;
+      apiResponse.success = true;
+      apiResponse.data = res;
+      apiResponse.message = `Brand id:${id} deleted`;
     } catch (error) {
       apiResponse.responseCode = error.responseCode;
       apiResponse.success = false;

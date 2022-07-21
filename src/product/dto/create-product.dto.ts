@@ -49,8 +49,8 @@ export class CreateProductDTO {
 
   @IsNumber()
   @Type(() => Number)
-  @IsNotEmpty()
-  brand_id: number;
+  @IsOptional()
+  brand_id?: number;
 
   @IsNumber()
   @Type(() => Number)

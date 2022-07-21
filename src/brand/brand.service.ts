@@ -1,6 +1,7 @@
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PaginationDTO } from 'src/shared/dto/pagination.dto';
 import {
+  deleteFile,
   editFileName,
   getImagePath,
   publicFilePath,
@@ -80,7 +81,7 @@ export class BrandService {
         var newBrand = await this.prisma.brand.create({
           data: {
             name: dto.name,
-            logo: publicFilePath(filename),
+            logo: filename,
             vip: Boolean(dto.vip)
           },
         });
@@ -91,24 +92,40 @@ export class BrandService {
     }
   }
 
-  async updateBrand(id: number, dto: UpdateBrandDTO) {
+  async updateBrand(file: Express.Multer.File, dto: UpdateBrandDTO) {
     try {
-      if (await this.prisma.brand.findFirst({ where: { id: id } })) {
-        if (dto.logo) {
-          let logoImageName = dto.name + '_logo';
-          await writeFileFromBase64(dto.logo, logoImageName);
-          dto.logo = getImagePath(logoImageName);
-        }
-        if (dto.image) {
-          let imageName =  dto.name + '_image';
-          await writeFileFromBase64(dto.image, imageName);
-          dto.image = getImagePath(imageName);
+      var old = await this.prisma.brand.findFirst({ where: { id: dto.id } });
+      if (old) {
+        if (file) {
+          // create new image
+          var filename = editFileName(file)
+          await saveFile(filename, file.buffer);
+          // if success, remove old image
+          await deleteFile(old.logo);
         }
         var brand = await this.prisma.brand.update({
-          where: { id: id },
-          data: dto,
+          where: { id: dto.id },
+          data: {
+            name: dto.name,
+            vip: dto.vip,
+            logo: filename,
+          },
         });
+        
         return brand;
+      } else {
+        throw new NotFoundException();
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deleteBrand(id: number) {
+    try {
+      if (await this.prisma.brand.findFirst({ where: { id: id } })) {
+        var res = await this.prisma.brand.delete({where: {id: id}});
+        await deleteFile(res.logo);
       } else {
         throw new NotFoundException();
       }
