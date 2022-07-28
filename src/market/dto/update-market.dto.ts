@@ -14,22 +14,22 @@ export class UpdateMarketDTO{
 
       @IsOptional()
       @IsString()
-      title?: string
+      title: string
   
       @IsString()
       @IsOptional()
-      address?: string
+      address: string
   
       @IsString()
       @IsOptional()
-      description?: string
+      description: string
   
       @IsString()
       @IsOptional()
-      phoneNumber?: string
+      phoneNumber: string
   
       @IsString()
       @IsOptional()
-      ownerName? : string
+      ownerName : string
   
   }

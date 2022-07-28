@@ -89,13 +89,30 @@ export class ProductController {
   @Post('uploadExcel')
   @UseInterceptors(FileInterceptor('file'))
   async uploadExcel(@Request() req: any, @UploadedFile() file: Express.Multer.File,) {
-    var apiResponse = new ApiResponse();
-    try {
+    var apiResponse = new ApiResponse();try {
       var res = await this.productService.uploadExcel(file);
       apiResponse.responseCode = 200;
       apiResponse.success = true;
-      apiResponse.data = res;
-      apiResponse.message = '';
+      apiResponse.data = true;
+      apiResponse.message = res;
+    } catch (error) {
+      apiResponse.responseCode = error.responseCode;
+      apiResponse.success = false;
+      apiResponse.message = error?.toString();
+    } finally {
+      return apiResponse;
+    }
+  }
+
+  @Post('uploadImages')
+  @UseInterceptors(FilesInterceptor('images', 50))
+  async uploadImages(@Request() req: any, @UploadedFiles() files: Express.Multer.File[]) {
+    var apiResponse = new ApiResponse();try {
+      var res = await this.productService.uploadImages(files);
+      apiResponse.responseCode = 200;
+      apiResponse.success = true;
+      apiResponse.data = true;
+      apiResponse.message = "Images has been saved successfully.";
     } catch (error) {
       apiResponse.responseCode = error.responseCode;
       apiResponse.success = false;

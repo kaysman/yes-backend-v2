@@ -73,7 +73,15 @@ export class ProductService {
             productId: product.id,
           }
         })
+        image.image = publicFilePath(image.image);
         product["images"] = [image]
+        var sizes = [];
+        for (let size of product.sizes) {
+          var kSize = await this.prisma.filter.findFirst({ where: { id: size.size_id } });
+          kSize["quantity"] = size.quantity;
+          sizes.push(kSize);
+        }
+        product.sizes = sizes;
       }
 
       return products;
@@ -144,6 +152,18 @@ export class ProductService {
         },
       });
       if (getProduct) {
+        var sizes = [];
+        for (let size of getProduct.sizes) {
+          var kSize = await this.prisma.filter.findFirst({ where: { id: size.size_id } });
+          kSize["quantity"] = size.quantity;
+          sizes.push(kSize);
+        }
+        getProduct.sizes = sizes;
+
+        // images
+        for (let image of getProduct.images) {
+          image.image = publicFilePath(image.image);
+        }
         return getProduct;
       } else throw new NotFoundException();
     } catch (error) {
@@ -152,6 +172,25 @@ export class ProductService {
   }
 
   async uploadExcel(file: Express.Multer.File) {
+
+    /*
+      1. Name TM
+      2. Name RU
+      3. Our price
+      4. Their Price
+      5. Color
+      6. Gender
+      7. Product Code
+      8. Description TM
+      9. Description RU
+      10. Brand ID
+      11. Subcategory ID
+      12. Market ID
+      13. Size IDs
+    */
+
+    let productsCreated = []
+
     try {
       const exceljs = require('exceljs');
       let buffer = file.buffer;
@@ -177,139 +216,160 @@ export class ProductService {
         .map((e) => e.id);
       var dbMarkets = prismaMarkets.map((e) => e.id);
 
-      await workbook.xlsx.load(buffer).then(() => {
-        let worksheet = workbook.worksheets[1];
+      var a = await workbook.xlsx.load(buffer);
+      let worksheet = workbook.worksheets[0];
 
-        // ------- colors -> 5th index -------------
-        var colors = worksheet.getColumn(5).values;
+      // ------- colors -> 5th index -------------
+      var colors = worksheet.getColumn(5).values;
+      for (var i = 2; i <= colors.length - 1; i++) {
+        if (!dbColors.includes(colors[i])) {
+          throw new NotFoundException(
+            'Color with id:' +
+            colors[i] +
+            ' at row:' +
+            i +
+            ' not found, please correct it and try again.',
+          );
+        }
+      }
+      // ----------------- end --------------------
 
-        for (var i = 2; i <= colors.length - 1; i++) {
-          if (!dbColors.includes(colors[i])) {
+      // ------- genders -> 6th index -------------
+      var genders = worksheet.getColumn(6).values;
+
+      for (var i = 2; i <= genders.length - 1; i++) {
+        if (!dbGenders.includes(genders[i])) {
+          throw new NotFoundException(
+            'Gender with id:' +
+            genders[i] +
+            ' at row:' +
+            i +
+            ' not found, please correct it and try again.',
+          );
+        }
+      }
+      // ----------------- end --------------------
+
+      // ------- sizes -> 14th index -------------
+      var sizes = worksheet.getColumn(13).values;
+
+      for (var i = 2; i <= sizes.length - 1; i++) {
+        if (!sizes[i] || sizes[i].length === 0) throw new NotFoundException(`C13:R${i} is empty`)
+        var cellValues = sizes[i].split(',');
+
+        cellValues.forEach((value) => {
+          // value -> <size_id> : <count> e.g 4:1000
+          let sizeAndCount = value.trim().split(':')
+          let size_id = sizeAndCount[0]
+          let count = sizeAndCount[1]
+          if (!dbSizes.includes(Number(size_id))) {
             throw new NotFoundException(
-              'Color with id:' +
-              colors[i] +
+              'Size with id:' +
+              size_id +
               ' at row:' +
               i +
               ' not found, please correct it and try again.',
             );
           }
+        });
+      }
+      // ----------------- end --------------------
+
+      // ------- brand -> 11th index -------------
+      var brands = worksheet.getColumn(10).values;
+
+      for (var i = 2; i <= brands.length - 1; i++) {
+        if (!dbBrands.includes(brands[i])) {
+          throw new NotFoundException(
+            'Brand with id:' +
+            brands[i] +
+            ' at row:' +
+            i +
+            ' not found, please correct it and try again.',
+          );
         }
-        // ----------------- end --------------------
+      }
+      // ----------------- end --------------------
 
-        // ------- genders -> 6th index -------------
-        var genders = worksheet.getColumn(6).values;
+      // ------- category -> 12th index -------------
+      var categories = worksheet.getColumn(11).values;
 
-        for (var i = 2; i <= genders.length - 1; i++) {
-          if (!dbGenders.includes(genders[i])) {
-            throw new NotFoundException(
-              'Gender with id:' +
-              genders[i] +
-              ' at row:' +
-              i +
-              ' not found, please correct it and try again.',
-            );
-          }
+      for (var i = 2; i <= categories.length - 1; i++) {
+        if (!dbSubCategories.includes(categories[i])) {
+          throw new NotFoundException(
+            'Category with id:' +
+            categories[i] +
+            ' at row:' +
+            i +
+            ' not found, make sure it is subcategory rather than main and try again.',
+          );
         }
-        // ----------------- end --------------------
+      }
+      // ----------------- end --------------------
 
-        // ------- sizes -> 14th index -------------
-        var sizes = worksheet.getColumn(14).values;
+      // ------- market -> 13th index -------------
+      var markets = worksheet.getColumn(12).values;
 
-        for (var i = 2; i <= sizes.length - 1; i++) {
-          var cellValues = sizes[i].split(',');
-          cellValues.forEach((value) => {
-            if (!dbSizes.includes(Number(value.trim()))) {
-              throw new NotFoundException(
-                'Size with id:' +
-                value.trim() +
-                ' at row:' +
-                i +
-                ' not found, please correct it and try again.',
-              );
-            }
-          });
+      for (var i = 2; i <= markets.length - 1; i++) {
+        if (!dbMarkets.includes(Number(markets[i]))) {
+          throw new NotFoundException(
+            'Market with id:' +
+            markets[i] +
+            ' at row:' +
+            i +
+            ' not found, please correct it and try again.',
+          );
         }
-        // ----------------- end --------------------
+      }
+      // ----------------- end --------------------
 
-        // ------- brand -> 11th index -------------
-        var brands = worksheet.getColumn(11).values;
 
-        for (var i = 2; i <= brands.length - 1; i++) {
-          if (!dbBrands.includes(brands[i])) {
-            throw new NotFoundException(
-              'Brand with id:' +
-              brands[i] +
-              ' at row:' +
-              i +
-              ' not found, please correct it and try again.',
-            );
-          }
+      for (let r of Array.from({ length: worksheet.rowCount - 1 }, (v, k) => k + 2)) {
+        let row = worksheet.getRow(r);
+        let sizesToCreate = []
+        let sizess: string[] = row.values[13].split(',');
+        sizess.forEach(e => {
+          const x = e.split(':')
+          sizesToCreate.push({
+            size_id: parseInt(x[0]),
+            quantity: parseInt(x[1]),
+          })
+        });
+
+
+        var prdt = {
+          name_tm: row.values[1],
+          name_ru: row.values[2],
+          ourPrice: parseInt(row.values[3]),
+          marketPrice: row.values[4] && row.values[4].length > 0 ? Number(row.values[4]) : Number(row.values[3]) - 10,
+          color_id: parseInt(row.values[5]),
+          gender_id: parseInt(row.values[6]),
+          code: row.values[7],
+          description_tm: row.values[8],
+          description_ru: row.values[9],
+          brand_id: parseInt(row.values[10]),
+          category_id: parseInt(row.values[11]),
+          market_id: parseInt(row.values[12]),
+          sizes: {create: sizesToCreate},
         }
-        // ----------------- end --------------------
 
-        // ------- category -> 12th index -------------
-        var categories = worksheet.getColumn(12).values;
+        var res = await this.prisma.product.create({ data: prdt })
+        productsCreated.push(res.id);
+      }
 
-        for (var i = 2; i <= categories.length - 1; i++) {
-          if (!dbSubCategories.includes(categories[i])) {
-            throw new NotFoundException(
-              'Category with id:' +
-              categories[i] +
-              ' at row:' +
-              i +
-              ' not found, make sure it is subcategory rather than main and try again.',
-            );
-          }
-        }
-        // ----------------- end --------------------
-
-        // ------- market -> 13th index -------------
-        var markets = worksheet.getColumn(13).values;
-
-        for (var i = 2; i <= markets.length - 1; i++) {
-          if (!dbMarkets.includes(markets[i])) {
-            throw new NotFoundException(
-              'Market with id:' +
-              markets[i] +
-              ' at row:' +
-              i +
-              ' not found, please correct it and try again.',
-            );
-          }
-        }
-        // ----------------- end --------------------
-
-
-        for (const r of Array.from({ length: worksheet.rowCount - 1 }, (v, k) => k + 2)) {
-          let row = worksheet.getRow(r);
-
-          var product = new CreateProductDTO();
-          product.name_tm = row.values[1].trim();
-          product.name_ru = row.values[2].trim();
-          product.ourPrice = Number(row.values[3]);
-          product.marketPrice = Number(row.values[4]);
-          product.color_id = Number(row.values[5]);
-          product.gender_id = Number(row.values[6]);
-          product.code = row.values[8].trim();
-          product.description_tm = row.values[9].trim();
-          product.description_ru = row.values[10].trim();
-          product.brand_id = Number(row.values[11]);
-          product.category_id = Number(row.values[12]);
-          product.market_id = Number(row.values[13]);
-
-          try {
-            this.prisma.product.createMany({
-              data: product
-            }).then((v) => {
-              console.log(v);
-              console.log(worksheet.rowCount + " products created");
-            });
-          } catch (error) {
-            console.log(error);
-          }
-        }
-      });
+      return `${productsCreated.length} products created`;
     } catch (error) {
+
+      if (productsCreated.length > 0) {
+        await this.prisma.product.deleteMany({
+          where: {
+            id: {
+              in: productsCreated
+            }
+          }
+        })
+      }
+
       throw error;
     }
   }
@@ -324,8 +384,7 @@ export class ProductService {
 
       if (!checkProduct) {
 
-        var parsedSizes = JSON.parse(dto.sizes.toString()) as Array<SizeItemDTO>;
-
+        var parsedSizes = JSON.parse(dto.sizes.toString()) as SizeItemDTO[];
         var newProduct = await this.prisma.product.create({
           data: {
             name_tm: dto.name_tm,
@@ -378,43 +437,83 @@ export class ProductService {
     }
   }
 
+
+  async uploadImages(files: Express.Multer.File[]) {
+    try {
+
+      console.log('------- Analyzing Images -------');
+      let prdIds = []
+      let buffers = []
+      for (let file of files) {
+        const img = file.originalname.split('_');
+        const name = img[0]
+        const prdt = await this.prisma.product.findFirst({where: {code: name}})
+        if (!prdt) {
+          const msg = `There is no product with code ${name}. Filename: ${file.originalname}`
+          console.log(msg);
+          throw new BadRequestException(msg)
+        } else {
+          // if (!prdIds[prdt.id]) prdIds[prdt.id] = []
+          prdIds.push({
+            productId: prdt.id,
+            image: editFileName(file),
+          })
+          buffers.push({
+            buffer: file.buffer,
+            name: editFileName(file),
+          })
+        }
+      }
+
+      // console.log(prdIds);
+      await this.prisma.product_Images.createMany({data: prdIds});
+      for (let file of buffers) {
+        await saveFile(file.name, file.buffer);
+      }
+      
+      return true
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async updateProduct(dto: UpdateProductDTO) {
     try {
 
       let {
-        id, 
-        name_tm, 
-        name_ru, 
-        ourPrice, 
-        marketPrice, 
-        color_id, 
-        gender_id, 
-        description_tm, 
-        description_ru, 
-        brand_id, 
-        category_id, 
+        id,
+        name_tm,
+        name_ru,
+        ourPrice,
+        marketPrice,
+        color_id,
+        gender_id,
+        description_tm,
+        description_ru,
+        brand_id,
+        category_id,
         market_id, sizes,
       } = dto
-      
+
       var getProduct = await this.prisma.product.findUnique({
-        where: { id: id }
+        where: { id: Number(id) }
       });
+
       if (getProduct) {
-        
         var res = await this.prisma.product.update({
-          where: {id: id},
+          where: { id: Number(id) },
           data: {
-            name_tm: name_tm,
-            name_ru: name_ru,
-            ourPrice: ourPrice,
-            marketPrice: marketPrice,
-            color_id: color_id,
-            gender_id: gender_id,
-            description_tm: description_tm,
-            description_ru: description_ru,
-            brand_id: brand_id,
-            category_id: category_id,
-            market_id: market_id,
+            name_tm: name_tm ?? undefined,
+            name_ru: name_ru ?? undefined,
+            ourPrice: ourPrice ?? undefined,
+            marketPrice: marketPrice ?? undefined,
+            color_id: color_id ?? undefined,
+            gender_id: gender_id ?? undefined,
+            description_tm: description_tm ?? undefined,
+            description_ru: description_ru ?? undefined,
+            brand_id: brand_id ?? undefined,
+            category_id: category_id ?? undefined,
+            market_id: market_id ?? undefined,
           },
           include: {
             category: true,
@@ -427,7 +526,7 @@ export class ProductService {
           },
         });
 
-        return res;
+        return await this.getProductById(res.id);
       } else throw new NotFoundException();
 
 
@@ -449,6 +548,14 @@ export class ProductService {
         }
         return true;
       } else throw new NotFoundException();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deleteMultipleProducts(ids: string) {
+    try {
+      // var parsed = 
     } catch (error) {
       throw error;
     }

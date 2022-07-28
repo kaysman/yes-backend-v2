@@ -22,10 +22,6 @@ export class UpdateCategoryDTO {
 
   @IsString()
   @IsOptional()
-  backroundImage?: string
-
-  @IsString()
-  @IsOptional()
   description_tm?: string;
 
   @IsString()

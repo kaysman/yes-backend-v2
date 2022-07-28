@@ -28,6 +28,16 @@ enum FilterType {
   SIZE
 }
 
+enum STATUS {
+  ACTIVE
+  INACTIVE
+}
+
+enum GadgetLocation {
+  HOME
+  CATEGORY
+}
+
 model Market {
   id          Int      @id @default(autoincrement())
   title       String
@@ -57,13 +67,13 @@ model Category {
 }
 
 model Brand {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   name      String
-  vip       Boolean  @default(false)
+  vip       Boolean   @default(false)
   logo      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  products Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
 }
 
 model Promotion {
@@ -98,48 +108,50 @@ model User {
 }
 
 model Product {
-  id          Int    @id @default(autoincrement())
-  name_tm     String
-  name_ru     String
-  ourPrice    Int
-  marketPrice Int
-  color_id    Int
-  color       Filter @relation("color", fields: [color_id], references: [id], onDelete: Cascade)
-  gender_id Int
-  gender    Filter @relation("gender", fields: [gender_id], references: [id], onDelete: Cascade)
-  code           String   @unique
+  id             Int              @id @default(autoincrement())
+  name_tm        String
+  name_ru        String
+  ourPrice       Int
+  marketPrice    Int
+  color_id       Int
+  color          Filter           @relation("color", fields: [color_id], references: [id], onDelete: Cascade)
+  gender_id      Int
+  gender         Filter           @relation("gender", fields: [gender_id], references: [id], onDelete: Cascade)
+  code           String           @unique
   description_tm String?
   description_ru String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  brand_id Int?
-  brand    Brand? @relation(fields: [brand_id], references: [id], onDelete: Cascade)
-  category_id Int
-  category    Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
-  market_id Int
-  market    Market @relation(fields: [market_id], references: [id], onDelete: Cascade)
-  images Product_Images[]
-  sizes  Product_Sizes[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  brand_id       Int?
+  brand          Brand?           @relation(fields: [brand_id], references: [id], onDelete: Cascade)
+  category_id    Int
+  category       Category         @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  market_id      Int
+  market         Market           @relation(fields: [market_id], references: [id], onDelete: Cascade)
+  images         Product_Images[]
+  sizes          Product_Sizes[]
+  gadgetedProducts Gadget_Products[]
 }
 
 model Filter {
-  id        Int        @id @default(autoincrement())
-  name_tm   String
-  name_ru   String
-  type      FilterType
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  color_products  Product[] @relation("color")
-  gender_products Product[] @relation("gender")
+  id              Int        @id @default(autoincrement())
+  name_tm         String
+  name_ru         String
+  type            FilterType
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  color_products  Product[]  @relation("color")
+  gender_products Product[]  @relation("gender")
 }
 
 model Product_Images {
-  id        Int      @id @default(autoincrement())
   image     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   productId Int
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([image, productId])
 }
 
 model Product_Sizes {
@@ -149,16 +161,44 @@ model Product_Sizes {
   product_id Int
   quantity   Int      @default(0)
   product    Product  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
   @@id([size_id, product_id])
 }
 
-model HomeGadget {
-  id                 Int     @id @default(autoincrement())
-  type               String
-  apiUrls            String
-  imageUrls          String
-  brandIds           String?
-  productIds         String?
-  swiperBannersCount Int?
-  queue              Int
+model Gadget {
+  id         Int             @id @default(autoincrement())
+  title      String?
+  type       String
+  links      Gadget_Links[]
+  images     Gadget_Images[]
+  productIds Gadget_Products[]
+  queue      Int
+  status     STATUS @default(INACTIVE)
+  location   GadgetLocation @default(HOME)
+}
+
+model Gadget_Images {
+  gadgetId  Int
+  gadget    Gadget   @relation(fields: [gadgetId], references: [id], onDelete: Cascade)
+  image     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([image, gadgetId])
+}
+
+model Gadget_Links {
+  gadgetId Int
+  gadget   Gadget @relation(fields: [gadgetId], references: [id], onDelete: Cascade)
+  link     String
+
+  @@id([link, gadgetId])
+}
+
+model Gadget_Products {
+  gadgetId    Int
+  gadget      Gadget @relation(fields: [gadgetId], references: [id], onDelete: Cascade)
+  productId   Int
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  @@id([gadgetId, productId])
 }

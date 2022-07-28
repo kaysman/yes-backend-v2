@@ -105,12 +105,16 @@ export class MarketService {
   }
 
   async updateMarket(dto: UpdateMarketDTO) {
-    try {
-      let {id} = dto
-      if (await this.prisma.market.findFirst({ where: { id: id } })) {
+    try {if (await this.prisma.market.findFirst({ where: { id: dto.id } })) {
         var market = await this.prisma.market.update({
-          where: { id: id },
-          data: dto,
+          where: { id: dto.id },
+          data: {
+            title: dto.title ?? undefined,
+            address: dto.address ?? undefined,
+            description: dto.description ?? undefined,
+            phoneNumber: dto.phoneNumber ?? undefined,
+            ownerName: dto.ownerName ?? undefined,
+          },
         });
         return market;
       } else {

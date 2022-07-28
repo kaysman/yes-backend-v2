@@ -26,7 +26,7 @@ export class UpdateBrandDTO {
       case 'false':
         return false;
       default:
-        return it;
+        return undefined;
     }
   })
   vip?: boolean;

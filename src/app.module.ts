@@ -16,6 +16,7 @@ import { FilterController } from './filter/filter.controller';
 import { FilterModule } from './filter/filter.module';
 import { FilterService } from './filter/filter.service';
 import { GadgetModule } from './gadgets/gadget.module';
+// import { GadgetModule } from './gadgets/gadget.module';
 import { MarketController } from './market/market.controller';
 import { MarketModule } from './market/market.module';
 import { MarketService } from './market/market.service';

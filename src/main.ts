@@ -22,6 +22,6 @@ async function bootstrap() {
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }))
   app.enableCors();
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
-  await app.listen(3333, '192.168.1.13');
+  await app.listen(3333, '192.168.1.2');
 }
 bootstrap();

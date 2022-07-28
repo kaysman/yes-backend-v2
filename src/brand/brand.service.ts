@@ -34,6 +34,9 @@ export class BrandService {
            cursor: cursor ? { id: cursor } : undefined,
          });
        }
+       for (let brand of brands){
+        brand.logo = publicFilePath(brand.logo);
+      }
       return brands;
     } catch (error) {
       throw error;
@@ -64,6 +67,7 @@ export class BrandService {
         where: { id: brandId }, include: {products: true},
        });
       if (getBrand) {
+        getBrand.logo = publicFilePath(getBrand.logo);
         return getBrand;
       } else return new NotFoundException('Brand cannot be found');
     } catch (error) {

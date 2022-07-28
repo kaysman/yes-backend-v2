@@ -1,3 +1,4 @@
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import * as argon from 'argon2';
 import { extname } from 'path';
 
@@ -8,7 +9,7 @@ export async function hashString(unHashedPassword: string): Promise<string> {
 const webp = require('webp-converter');
 
 
-export function publicFilePath(filename) {
+export function publicFilePath(filename: string) {
   return 'public/' + filename;
 }
 
@@ -38,14 +39,14 @@ export const imageFileFilter = (req, file, callback) => {
 /*
   Write file into /public
 */
-export const saveFile = (filename, buffer) => {
+export const saveFile = async (filename, buffer) => {
   const fs = require('fs');
   try {
     // { mode: '0o666' }
-    fs.writeFile('./public/' + filename, buffer, function (err){
+    await fs.writeFile('./public/' + filename, buffer, function (err) {
       if (err) throw err;
       console.log(`${filename} saved.`);
-      
+
     });
   } catch (error) {
     console.log(error);
@@ -56,10 +57,18 @@ export const saveFile = (filename, buffer) => {
 /*
   Delete file from /public
 */
-export const deleteFile = (filename) => {
+export const deleteFile = (filename) : boolean => {
   const fs = require('fs');
+  const loc = './public/'
   try {
-    fs.unlinkSync('./public/' + filename);
+    for(let file of fs.readdirSync(loc)){
+      if (file === filename) {
+        fs.unlinkSync(loc + filename);
+        console.log(`${filename} deleted.`);
+        return true
+      } 
+    };
+    throw new NotFoundException(`No such image found in ${loc}. ${filename}`)
   } catch (error) {
     console.log(error);
     throw error;
@@ -99,13 +108,24 @@ export function get_webpbase64(path) {
         console.log(result);
       });
     }
-  });  
+  });
 }
-  export function GetExcelFile(){
-var XLSX = require('xlsx')
-var workbook = XLSX.readFile('C:/Users/hajym/OneDrive/Documents/doc.xlsx');
-var sheet_name_list = workbook.SheetNames;
-var xlData = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
-console.log(xlData);
+export function GetExcelFile() {
+  var XLSX = require('xlsx')
+  var workbook = XLSX.readFile('C:/Users/hajym/OneDrive/Documents/doc.xlsx');
+  var sheet_name_list = workbook.SheetNames;
+  var xlData = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
+  console.log(xlData);
 
-  }
+}
+
+// Function to get current filenames
+// in directory with specific extension
+export function getFilesInDirectory() {
+  const fs = require('fs');
+  console.log("\nFiles present in directory:");
+  let files = fs.readdirSync(__dirname);
+  files.forEach(file => {
+    console.log(file);
+  });
+}
