@@ -20,9 +20,9 @@ import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { CreateProductDTO } from './dto/create-product.dto';
 import { FilterForProductDTO } from './dto/filter-for-product.dto';
 import { ProductService } from './product.service';
-import { diskStorage } from 'multer';
-import { editFileName, imageFileFilter } from 'src/shared/helper';
+import { imageFileFilter } from 'src/shared/helper';
 import { UpdateProductDTO } from './dto/update-product.dto';
+import { DeleteManyProductsDTO } from './dto/delete-many.dto';
 
 @Controller('products')
 export class ProductController {
@@ -145,6 +145,26 @@ export class ProductController {
     var apiResponse = new ApiResponse();
     try {
       var res = await this.productService.deleteProduct(id);
+      apiResponse.responseCode = 200;
+      apiResponse.success = true;
+      apiResponse.data = res;
+      apiResponse.message = '';
+    } catch (error) {
+      apiResponse.responseCode = error.responseCode;
+      apiResponse.success = false;
+      apiResponse.message = error.toString();
+    } finally {
+      return apiResponse;
+    }
+  }
+
+  @Patch('deleteMultiple')
+  async deleteMultipleProducts(@Body() dto: DeleteManyProductsDTO) {
+    console.log(dto);
+    
+    var apiResponse = new ApiResponse();
+    try {
+      var res = await this.productService.deleteMultipleProducts(dto);
       apiResponse.responseCode = 200;
       apiResponse.success = true;
       apiResponse.data = res;

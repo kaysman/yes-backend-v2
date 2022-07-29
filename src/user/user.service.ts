@@ -28,7 +28,7 @@ export class UserService {
             name: dto.name,
             phoneNumber: dto.phoneNumber,
             password: dto.password, // TODO: hash password before save.
-            address: dto.address,
+            // address: dto.address,
             gender: dto.gender,
             role: dto.role,
           },

@@ -20,6 +20,9 @@ import { GadgetModule } from './gadgets/gadget.module';
 import { MarketController } from './market/market.controller';
 import { MarketModule } from './market/market.module';
 import { MarketService } from './market/market.service';
+import { OrderController } from './order/order.controller';
+import { OrderModule } from './order/order.module';
+import { OrderService } from './order/order.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductController } from './product/product.controller';
 import { ProductModule } from './product/product.module';
@@ -37,10 +40,12 @@ import { UserService } from './user/user.service';
     CategoryModule,
     BrandModule,
     ProductModule,
+    OrderModule,
     FilterModule,
     ConfigModule.forRoot({ isGlobal: true }),
     GadgetModule,
     MulterModule.register(),
+    
   ],
   controllers: [
     AuthController,
@@ -50,6 +55,7 @@ import { UserService } from './user/user.service';
     ProductController,
     BrandController,
     FilterController,
+    OrderController,
   ],
   providers: [
     AuthService,
@@ -59,7 +65,8 @@ import { UserService } from './user/user.service';
     BrandService,
     ProductService,
     FilterService,
-    JwtService
+    JwtService,
+    OrderService,
   ],
 })
 

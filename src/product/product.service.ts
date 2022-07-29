@@ -14,6 +14,7 @@ import { GetProductDTO } from './dto/get-product-dto';
 import { deleteFile, editFileName, publicFilePath, saveFile } from 'src/shared/helper';
 import { RuleTester } from 'eslint';
 import { UpdateProductDTO } from './dto/update-product.dto';
+import { DeleteManyProductsDTO } from './dto/delete-many.dto';
 
 @Injectable()
 export class ProductService {
@@ -73,13 +74,18 @@ export class ProductService {
             productId: product.id,
           }
         })
-        image.image = publicFilePath(image.image);
-        product["images"] = [image]
+        product["images"] = []
+        if (image) {
+          image.image = publicFilePath(image.image);
+          if (product['images'].length === 0) product["images"].push(image)
+        }
         var sizes = [];
         for (let size of product.sizes) {
           var kSize = await this.prisma.filter.findFirst({ where: { id: size.size_id } });
-          kSize["quantity"] = size.quantity;
-          sizes.push(kSize);
+          if (kSize) {
+            kSize["quantity"] = size.quantity;
+            sizes.push(kSize);
+          }
         }
         product.sizes = sizes;
       }
@@ -350,7 +356,7 @@ export class ProductService {
           brand_id: parseInt(row.values[10]),
           category_id: parseInt(row.values[11]),
           market_id: parseInt(row.values[12]),
-          sizes: {create: sizesToCreate},
+          sizes: { create: sizesToCreate },
         }
 
         var res = await this.prisma.product.create({ data: prdt })
@@ -447,30 +453,31 @@ export class ProductService {
       for (let file of files) {
         const img = file.originalname.split('_');
         const name = img[0]
-        const prdt = await this.prisma.product.findFirst({where: {code: name}})
+        const prdt = await this.prisma.product.findFirst({ where: { code: name } })
         if (!prdt) {
           const msg = `There is no product with code ${name}. Filename: ${file.originalname}`
           console.log(msg);
           throw new BadRequestException(msg)
         } else {
           // if (!prdIds[prdt.id]) prdIds[prdt.id] = []
+          var filename = editFileName(file)
           prdIds.push({
             productId: prdt.id,
-            image: editFileName(file),
+            image: filename,
           })
           buffers.push({
             buffer: file.buffer,
-            name: editFileName(file),
+            name: filename,
           })
         }
       }
 
       // console.log(prdIds);
-      await this.prisma.product_Images.createMany({data: prdIds});
+      await this.prisma.product_Images.createMany({ data: prdIds });
       for (let file of buffers) {
         await saveFile(file.name, file.buffer);
       }
-      
+
       return true
     } catch (error) {
       throw error;
@@ -553,9 +560,26 @@ export class ProductService {
     }
   }
 
-  async deleteMultipleProducts(ids: string) {
+  async deleteMultipleProducts(dto: DeleteManyProductsDTO) {
     try {
-      // var parsed = 
+      const parsed = JSON.parse(dto.ids.toString()) as number[]
+      console.log('asdasdasd');
+      
+      let imgs = []
+      for (let id of parsed) {
+        var prdt = await this.prisma.product.findFirst({where: {id: id}, include: {images: true}})
+        if (!prdt){
+          const msg = `There is no product with id ${id}.`
+          throw new BadRequestException(msg)
+        } else {
+          imgs.concat(prdt.images.map(e => e.image))
+        }
+      }
+
+      await this.prisma.product.deleteMany({where: {id: {in: parsed}}})
+      for (let img of imgs) {
+        deleteFile(img)
+      }
     } catch (error) {
       throw error;
     }

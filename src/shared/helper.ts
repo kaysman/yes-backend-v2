@@ -57,7 +57,7 @@ export const saveFile = async (filename, buffer) => {
 /*
   Delete file from /public
 */
-export const deleteFile = (filename) : boolean => {
+export const deleteFile = (filename: string) : boolean => {
   const fs = require('fs');
   const loc = './public/'
   try {
