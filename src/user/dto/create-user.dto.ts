@@ -23,10 +23,6 @@ export class CreateUserDTO{
     @IsString()
     @IsNotEmpty()
     password : string
-    
-    @IsString()
-    @IsNotEmpty()
-    address : string 
 
     @IsOptional()
     @IsEnum(GenderType)
@@ -35,9 +31,4 @@ export class CreateUserDTO{
     @IsNotEmpty()
     @IsEnum(RoleType)
     role: RoleType
-
-    @IsString()
-    @IsOptional()
-    image?: string
-    
 }

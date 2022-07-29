@@ -23,22 +23,12 @@ export class UserService {
       if (!checkUser) {
         var hashedPassword = await hashString(dto.password);
         dto.password = hashedPassword;
-        var newUser = await this.prisma.user.create({
-          data: {
-            name: dto.name,
-            phoneNumber: dto.phoneNumber,
-            password: dto.password, // TODO: hash password before save.
-            // address: dto.address,
-            gender: dto.gender,
-            role: dto.role,
-          },
-        });
-        if (dto.image) {
-          console.log('we are here');
-
-          // var fileName = dto.phoneNumber;
-          // return await writeFileFromBase64(dto.image, fileName);
-        }
+        var newUser = await this.prisma.user.create({data: dto});
+        // if (dto.image) {
+        //   console.log('we are here');
+        //   // var fileName = dto.phoneNumber;
+        //   // return await writeFileFromBase64(dto.image, fileName);
+        // }
         delete newUser.password;
         return newUser;
       }

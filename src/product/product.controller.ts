@@ -160,8 +160,6 @@ export class ProductController {
 
   @Patch('deleteMultiple')
   async deleteMultipleProducts(@Body() dto: DeleteManyProductsDTO) {
-    console.log(dto);
-    
     var apiResponse = new ApiResponse();
     try {
       var res = await this.productService.deleteMultipleProducts(dto);

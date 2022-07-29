@@ -7,7 +7,14 @@ export class CreateOrderDTO {
     products: CreateOrderItem[]
 
     @IsNotEmpty()
-    contact: ContactDetails
+    @IsNumber()
+    @Type(() => Number)
+    userId: number
+    
+    @IsNotEmpty()
+    @IsNumber()
+    @Type(() => Number)
+    addressId: number
 
     @IsOptional()
     @IsString()
@@ -31,16 +38,3 @@ export class CreateOrderItem {
     size_id: number
 }
 
-export class ContactDetails {
-    @IsNotEmpty()
-    @IsString()
-    phonenumber: string
-    
-    @IsNotEmpty()
-    @IsString()
-    address: string
-
-    @IsOptional()
-    @IsString()
-    name: string
-}

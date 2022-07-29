@@ -1,23 +1,40 @@
-import { Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from "@nestjs/common";
+import { ApiResponse } from "src/shared/dto/api_response.dto";
+import { CreateOrderDTO } from "./dto/create-order.dto";
 import { OrderService } from "./order.service";
 
 @Controller('orders')
 export class OrderController {
-    constructor (private orderService: OrderService) {}
+    constructor(private orderService: OrderService) { }
 
     @Get('')
-    async getOrders() {return 'aaa'}
+    async getOrders() { return 'aaa' }
 
     @Get(':id')
-    async getOrderById(@Param('id', ParseIntPipe) id: number) {}
+    async getOrderById(@Param('id', ParseIntPipe) id: number) { }
 
     @Post('create')
-    async createOrder(){}
+    async createOrder(@Body() dto: CreateOrderDTO) {
+        var apiResponse = new ApiResponse();
+        try {
+            var res = await this.orderService.createOrder(dto);
+            apiResponse.responseCode = 200;
+            apiResponse.success = true;
+            apiResponse.data = res;
+            apiResponse.message = '';
+        } catch (error) {
+            apiResponse.success = false;
+            apiResponse.responseCode = error.responseCode;
+            apiResponse.message = error.toString();
+        } finally {
+            return apiResponse;
+        }
+    }
 
     @Patch('update')
-    async updateOrder() {}
+    async updateOrder() { }
 
     @Delete(':id')
-    async deleteOrder() {}
+    async deleteOrder() { }
 
 }

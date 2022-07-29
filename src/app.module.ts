@@ -30,6 +30,7 @@ import { ProductService } from './product/product.service';
 import { UserController } from './user/user.controller';
 import { UserModule } from './user/user.module';
 import { UserService } from './user/user.service';
+import { AddressModule } from './address/address.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { UserService } from './user/user.service';
     ConfigModule.forRoot({ isGlobal: true }),
     GadgetModule,
     MulterModule.register(),
+    AddressModule,
     
   ],
   controllers: [

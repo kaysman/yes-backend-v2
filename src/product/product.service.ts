@@ -262,7 +262,6 @@ export class ProductService {
       for (var i = 2; i <= sizes.length - 1; i++) {
         if (!sizes[i] || sizes[i].length === 0) throw new NotFoundException(`C13:R${i} is empty`)
         var cellValues = sizes[i].split(',');
-
         cellValues.forEach((value) => {
           // value -> <size_id> : <count> e.g 4:1000
           let sizeAndCount = value.trim().split(':')
@@ -454,12 +453,12 @@ export class ProductService {
         const img = file.originalname.split('_');
         const name = img[0]
         const prdt = await this.prisma.product.findFirst({ where: { code: name } })
+        
         if (!prdt) {
           const msg = `There is no product with code ${name}. Filename: ${file.originalname}`
           console.log(msg);
           throw new BadRequestException(msg)
         } else {
-          // if (!prdIds[prdt.id]) prdIds[prdt.id] = []
           var filename = editFileName(file)
           prdIds.push({
             productId: prdt.id,
@@ -471,9 +470,8 @@ export class ProductService {
           })
         }
       }
-
-      // console.log(prdIds);
-      await this.prisma.product_Images.createMany({ data: prdIds });
+      
+      var x = await this.prisma.product_Images.createMany({ data: prdIds });
       for (let file of buffers) {
         await saveFile(file.name, file.buffer);
       }
@@ -563,22 +561,22 @@ export class ProductService {
   async deleteMultipleProducts(dto: DeleteManyProductsDTO) {
     try {
       const parsed = JSON.parse(dto.ids.toString()) as number[]
-      console.log('asdasdasd');
       
-      let imgs = []
+      let imgs : string[] = []
       for (let id of parsed) {
         var prdt = await this.prisma.product.findFirst({where: {id: id}, include: {images: true}})
         if (!prdt){
           const msg = `There is no product with id ${id}.`
           throw new BadRequestException(msg)
         } else {
-          imgs.concat(prdt.images.map(e => e.image))
+          let images = prdt.images.map(e => e.image)
+          imgs = imgs.concat(images)
         }
       }
 
       await this.prisma.product.deleteMany({where: {id: {in: parsed}}})
       for (let img of imgs) {
-        deleteFile(img)
+        await deleteFile(img)
       }
     } catch (error) {
       throw error;

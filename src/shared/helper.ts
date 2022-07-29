@@ -46,7 +46,6 @@ export const saveFile = async (filename, buffer) => {
     await fs.writeFile('./public/' + filename, buffer, function (err) {
       if (err) throw err;
       console.log(`${filename} saved.`);
-
     });
   } catch (error) {
     console.log(error);
