@@ -170,6 +170,12 @@ export class ProductService {
         for (let image of getProduct.images) {
           image.image = publicFilePath(image.image);
         }
+
+        delete getProduct.brand_id
+        delete getProduct.category_id
+        delete getProduct.market_id
+        delete getProduct.color_id
+        delete getProduct.gender_id
         return getProduct;
       } else throw new NotFoundException();
     } catch (error) {

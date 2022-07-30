@@ -1,7 +1,7 @@
 import { GadgetLocation, STATUS } from "@prisma/client";
 import { Type } from "class-transformer";
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
-import { GadgetType } from "src/shared/enums/home_gadget.enum";
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
+import { GadgetType } from "../enums/gadget.enum";
 
 export class CreateGadget {
     @IsNotEmpty()
@@ -14,7 +14,7 @@ export class CreateGadget {
     @IsString()
     title?: string;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
     links: CreateGadgetLink[]
 
@@ -23,6 +23,10 @@ export class CreateGadget {
     @IsOptional()
     @IsString()
     productIds?: CreateGadgetProducts[];
+
+    @IsOptional()
+    @IsString()
+    categories: CreateGadgetCategory[];
 
     @IsOptional()
     @Type(() => Number)
@@ -43,9 +47,6 @@ export class CreateGadgetLink {
     @IsNotEmpty()
     @IsString()
     link: string
-
-    @IsOptional()
-    subcategories: CreateGadgetSubCategory[];
 }
 
 export class CreateGadgetProducts {
@@ -55,7 +56,7 @@ export class CreateGadgetProducts {
     productId: number
 }
 
-export class CreateGadgetSubCategory{
+export class CreateGadgetCategory {
     @IsNotEmpty()
     @IsNumber()
     @Type(() => Number)

@@ -16,11 +16,27 @@ export class OrderService {
           note: dto.note,
           userId: dto.userId,
           products: {create: data}
-        }
+        }, include: {products: true, address: true},
       });
+      return res
     } catch (error) {
       throw error
     }
   }
+
+  async getOrders() {
+    try {
+      return await this.prisma.order.findMany({include: {products: true, address: true}});
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getOrderById(){}
+
+  async updateOrder(){}
+
+
+  async deleteOrder(){}
 
 }

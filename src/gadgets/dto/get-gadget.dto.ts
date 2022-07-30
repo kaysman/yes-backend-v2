@@ -1,7 +1,6 @@
 import { GadgetLocation, Product, STATUS } from "@prisma/client";
 import { IsEnum, IsOptional } from "class-validator";
-import { GadgetType } from "src/shared/enums/home_gadget.enum";
-import { CreateGadgetSubCategory } from "./create-gadget.dto";
+import { CreateGadgetCategory } from "./create-gadget.dto";
 
 export class GetGadgetQuery {
     @IsOptional()
@@ -25,6 +24,6 @@ export class GetGadgetDTO {
 
 export class GetGadgetLinkImage {
     link: string
-    subcategories: CreateGadgetSubCategory[];
+    subcategories: CreateGadgetCategory[];
     image: string
 }

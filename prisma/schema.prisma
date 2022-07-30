@@ -20,17 +20,18 @@ model Market {
 }
 
 model Category {
-  id             Int        @id @default(autoincrement())
+  id             Int                 @id @default(autoincrement())
   title_tm       String
   title_ru       String?
   description_tm String?
   description_ru String?
-  parentId       Int?       @map("categoryId")
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-  parent         Category?  @relation("CategorySubcategories", fields: [parentId], references: [id])
-  subcategories  Category[] @relation("CategorySubcategories")
+  parentId       Int?                @map("categoryId")
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  parent         Category?           @relation("CategorySubcategories", fields: [parentId], references: [id])
+  subcategories  Category[]          @relation("CategorySubcategories")
   products       Product[]
+  gadgets        Gadget_Categories[]
 }
 
 model Brand {
@@ -130,15 +131,16 @@ model Product_Sizes {
 }
 
 model Gadget {
-  id         Int               @id @default(autoincrement())
+  id         Int                 @id @default(autoincrement())
   type       String
   queue      Int
-  location   GadgetLocation    @default(HOME)
-  status     STATUS            @default(INACTIVE)
+  location   GadgetLocation      @default(HOME)
+  status     STATUS              @default(INACTIVE)
   title      String?
   images     Gadget_Images[]
   links      Gadget_Links[]
   productIds Gadget_Products[]
+  categories Gadget_Categories[]
 }
 
 model Gadget_Images {
@@ -168,12 +170,22 @@ model Gadget_Products {
   @@id([gadgetId, productId])
 }
 
+model Gadget_Categories {
+  gadgetId   Int
+  categoryId Int
+  gadget     Gadget   @relation(fields: [gadgetId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([gadgetId, categoryId])
+}
+
 model Order {
   id        Int              @id @default(autoincrement())
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
   addressId Int
   note      String?
+  status    ORDER_STATUS?    @default(CREATED)
   userId    Int
   address   Address          @relation(fields: [addressId], references: [id])
   user      User             @relation(fields: [userId], references: [id])
@@ -196,7 +208,6 @@ model Address {
   id           Int              @id @default(autoincrement())
   addressLine1 String
   addressLine2 String?
-  title        String?
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
   orders       Order[]
@@ -206,6 +217,7 @@ model Address {
 model User_Addresses {
   addressId Int
   userId    Int
+  title     String?
   default   Boolean? @default(false)
   address   Address  @relation(fields: [addressId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -239,4 +251,10 @@ enum STATUS {
 enum GadgetLocation {
   HOME
   CATEGORY
+}
+
+enum ORDER_STATUS {
+  CREATED
+  APPROVED
+  COMPLETED
 }

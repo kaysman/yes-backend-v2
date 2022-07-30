@@ -1,7 +1,6 @@
 import { GadgetLocation, STATUS } from "@prisma/client";
 import { Type } from "class-transformer";
 import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
-import { GadgetType } from "src/shared/enums/home_gadget.enum";
 
 export class UpdateGadgetDTO {
     @IsNotEmpty()

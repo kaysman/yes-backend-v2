@@ -1,18 +1,19 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
-import { GadgetType } from "src/shared/enums/home_gadget.enum";
+import { ProductService } from "src/product/product.service";
 import { deleteFile, editFileName, getFilesInDirectory, publicFilePath, saveFile } from "src/shared/helper";
-import { CreateGadget, CreateGadgetLink } from "./dto/create-gadget.dto";
+import { CreateGadget, CreateGadgetCategory, CreateGadgetLink, CreateGadgetProducts } from "./dto/create-gadget.dto";
 import { GetGadgetDTO, GetGadgetLinkImage, GetGadgetQuery } from "./dto/get-gadget.dto";
 import { UpdateGadgetDTO } from "./dto/update-gadget.dto";
+import { GadgetType } from "./enums/gadget.enum";
 
 @Injectable()
 export class GadgetService {
-    constructor(private prisma: PrismaService) { }
+    constructor(private prisma: PrismaService, private productService: ProductService,) { }
 
     async getGadgetById(id: number) {
         try {
-            var gadget = await this.prisma.gadget.findFirst({ where: { id: id } });
+            var gadget = await this.prisma.gadget.findFirst({ where: { id: id }, include: {productIds: true} });
             if (gadget) {
                 var dto = new GetGadgetDTO()
                 dto.queue = gadget.queue
@@ -20,6 +21,7 @@ export class GadgetService {
                 dto.type = gadget.type
                 dto.status = gadget.status
                 dto.location = gadget.location
+                
 
                 var links = (await this.prisma.gadget_Links.findMany({ where: { gadgetId: id } })).map(e => e.link);
 
@@ -33,6 +35,12 @@ export class GadgetService {
                     items.push(item)
                 }
 
+                let products = []
+                for (let x of gadget.productIds) {
+                    products.push(await this.productService.getProductById(x.productId))
+                }
+
+                dto.products = products
                 dto.items = items
 
                 return dto
@@ -64,10 +72,18 @@ export class GadgetService {
                 var item = new GetGadgetLinkImage()
                 for (let img of res[i].images) {
                     item.image = publicFilePath(img.image)
-                    item.link = res[i].links[res[i].images.indexOf(img)].link
+                    item.link = res[i].links[res[i].images.indexOf(img)]?.link
                     items.push(item)
                 }
                 res[i]['items'] = items
+
+                let products = []
+                for (let x of res[i].productIds) {
+                    products.push(await this.productService.getProductById(x.productId))
+                }
+                res[i]['products'] = products
+                
+                delete res[i].productIds
                 delete res[i].links
                 delete res[i].images
             }
@@ -90,11 +106,22 @@ export class GadgetService {
             queue,
             status,
             location,
+            categories
         } = dto
 
-        links = JSON.parse(links.toString()) as CreateGadgetLink[];
+        if (links) {
+            links = JSON.parse(links.toString()) as CreateGadgetLink[];
+        }
 
-        var urlCount = links.length;
+        if (productIds) {
+            productIds = JSON.parse(productIds.toString()) as CreateGadgetProducts[];
+        }
+
+        if (categories) {
+            categories = JSON.parse(categories.toString()) as CreateGadgetCategory[];
+        } 
+
+        var urlCount = links?.length ?? 0;
         var message: string;
 
         switch (type) {
@@ -141,8 +168,8 @@ export class GadgetService {
                 break;
 
             case GadgetType.TWO_TO_THREE_PRODUCTS_IN_HORIZONTAL_WITH_TITLE_AS_TEXT:
-                // TODO: check product ids
-                message = title && productIds && productIds.length > 2 ? undefined : "Enter a title and select products to display horizontally.";
+                links = undefined
+                message = title && productIds && productIds.length === files.length /*&& products.length > 3*/ ? undefined : "Enter a title and select at least 3 products with equal number of images to display horizontally.";
                 break;
 
             case GadgetType.CIRCLE_ITEMS:
@@ -150,12 +177,8 @@ export class GadgetService {
                 break;
 
             case GadgetType.CATEGORY_BANNER:
-                for (let linkAndImage of links) {
-                    if (!linkAndImage.subcategories) {
-                        message = "No sub items selected for one of the mains.";
-                        break;
-                    }
-                }
+                links = undefined
+                message = categories && categories.length === files.length ? undefined : "Select equal number of images and main categories";
                 break;
 
             default:
@@ -169,17 +192,19 @@ export class GadgetService {
         }
 
         try {
-            var data = [];
-            for (let l of links) {
-                data.push({ link: l.link })
+            let dLinks = [];
+            if (links) {
+                for (let l of links) {
+                    dLinks.push({ link: l.link })
+                }
             }
 
-            var imgs = []
+            let imgs = []
             for (let f of files) {
                 var filename = editFileName(f)
                 imgs.push({ image: filename })
             }
-
+            
             var gadget = await this.prisma.gadget.create({
                 data: {
                     type: type.toString(),
@@ -187,8 +212,10 @@ export class GadgetService {
                     queue: queue,
                     status: status,
                     location: location,
-                    links: { create: data },
-                    images: { create: imgs }
+                    links: { create: dLinks },
+                    images: { create: imgs },
+                    productIds: productIds ? {create: productIds} : undefined,
+                    categories: categories ? {create: categories} : undefined,
                 }
             });
 
