@@ -65,9 +65,8 @@ export class GadgetController {
       apiResponse.responseCode = error.responseCode;
       apiResponse.success = false;
       apiResponse.message = error.toString();
-    } finally {
-      return apiResponse;
     }
+    return apiResponse
   }
 
   @Patch('update')

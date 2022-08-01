@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import { PrismaService } from "src/prisma/prisma.service";
 import { ProductService } from "src/product/product.service";
 import { deleteFile, editFileName, getFilesInDirectory, publicFilePath, saveFile } from "src/shared/helper";
+import { buffer } from "stream/consumers";
 import { CreateGadget, CreateGadgetCategory, CreateGadgetLink, CreateGadgetProducts } from "./dto/create-gadget.dto";
 import { GetGadgetDTO, GetGadgetLinkImage, GetGadgetQuery } from "./dto/get-gadget.dto";
 import { UpdateGadgetDTO } from "./dto/update-gadget.dto";
@@ -69,8 +70,9 @@ export class GadgetService {
 
             for (let i = 0; i < res.length; i++) {
                 var items: GetGadgetLinkImage[] = []
-                var item = new GetGadgetLinkImage()
+                
                 for (let img of res[i].images) {
+                    var item = new GetGadgetLinkImage()
                     item.image = publicFilePath(img.image)
                     item.link = res[i].links[res[i].images.indexOf(img)]?.link
                     items.push(item)
@@ -173,12 +175,17 @@ export class GadgetService {
                 break;
 
             case GadgetType.CIRCLE_ITEMS:
-                message = urlCount === files.length ? undefined : "Enter equal number of images and links";
+                links = undefined
+                message = categories && categories.length === files.length ? undefined : "Enter equal number of images and links";
                 break;
 
             case GadgetType.CATEGORY_BANNER:
                 links = undefined
                 message = categories && categories.length === files.length ? undefined : "Select equal number of images and main categories";
+                break;
+
+            case GadgetType.THREE_TO_THREE_GRID_WITH_TITLE_AS_TEXT:
+                message = title && urlCount === files.length ? undefined : "Enter a title with equal number of images and links";
                 break;
 
             default:
@@ -200,9 +207,11 @@ export class GadgetService {
             }
 
             let imgs = []
+            let buffers = []
             for (let f of files) {
                 var filename = editFileName(f)
                 imgs.push({ image: filename })
+                buffers.push({name: filename, buffer: f.buffer})
             }
             
             var gadget = await this.prisma.gadget.create({
@@ -220,8 +229,8 @@ export class GadgetService {
             });
 
             
-            for (let f of files) {
-                await saveFile(editFileName(f), f.buffer);
+            for (let f of buffers) {
+                await saveFile(f.name, f.buffer);
             }
 
             return await this.getGadgetById(gadget.id);
