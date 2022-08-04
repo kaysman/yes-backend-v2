@@ -43,7 +43,7 @@ import { AddressModule } from './address/address.module';
     ProductModule,
     OrderModule,
     FilterModule,
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env'] }),
     GadgetModule,
     MulterModule.register(),
     AddressModule,
