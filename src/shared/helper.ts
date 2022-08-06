@@ -1,6 +1,5 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import * as argon from 'argon2';
-import { extname } from 'path';
 
 export async function hashString(unHashedPassword: string): Promise<string> {
   return await argon.hash(unHashedPassword);
@@ -13,19 +12,6 @@ export function publicFilePath(filename: string) {
   return 'public/' + filename;
 }
 
-/* 
-  Helper function to edit filename before saving.
-*/
-export const editFileName = (file) => {
-  const name = file.originalname.split('.')[0].toLowerCase();
-  const fileExtName = extname(file.originalname);
-  const randomName = Array(4)
-    .fill(null)
-    .map(() => Math.round(Math.random() * 16).toString(16))
-    .join('');
-  return `${name}-${randomName}${fileExtName}`;
-};
-
 /*
   Image Filter
 */
@@ -36,17 +22,43 @@ export const imageFileFilter = (req, file, callback) => {
   callback(null, true);
 };
 
+/* 
+  Helper function to edit filename before saving.
+*/
+export const editFileName = (file: Express.Multer.File): string => {
+  const timestamp = new Date().toISOString()
+  const randomtext = Array(4)
+    .fill(null)
+    .map(() => Math.round(Math.random() * 16).toString(16))
+    .join('')
+  const justName = file.originalname.split('.')[0].toLowerCase();
+  const ref = `${timestamp}-${justName}-${randomtext}.webp`;
+  return ref;
+};
+
 /*
   Write file into /public
 */
 export const saveFile = async (filename, buffer) => {
   const fs = require('fs');
+  const sharp = require('sharp');
+  const loc = './public'
   try {
-    // { mode: '0o666' }
-    await fs.writeFile('./public/' + filename, buffer, function (err) {
-      if (err) throw err;
-      console.log(`${filename} saved.`);
+    fs.access(loc, (err) => {
+      if (err) fs.mkdirSync(loc)
+      // fs.writeFile(`${loc}/${filename}`, buffer, function (err) {
+      //   if (err) throw err;
+      //   console.log(`${filename} saved.`);
+      // });
     });
+    await sharp(buffer)
+      .webp({ quality: 80 })
+      .resize(600)
+      .toFile(`./public/${filename}`, (err, info) => {
+        if (err) throw err;
+        console.log(info);
+        console.log(`${filename} saved.`);
+      });
   } catch (error) {
     console.log(error);
     throw error;
@@ -56,16 +68,16 @@ export const saveFile = async (filename, buffer) => {
 /*
   Delete file from /public
 */
-export const deleteFile = (filename: string) : boolean => {
+export const deleteFile = (filename: string): boolean => {
   const fs = require('fs');
   const loc = './public/'
   try {
-    for(let file of fs.readdirSync(loc)){
+    for (let file of fs.readdirSync(loc)) {
       if (file === filename) {
         fs.unlinkSync(loc + filename);
         console.log(`${filename} deleted.`);
         return true
-      } 
+      }
     };
     throw new NotFoundException(`No such image found in ${loc}. ${filename}`)
   } catch (error) {
