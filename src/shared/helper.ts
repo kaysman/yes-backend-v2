@@ -46,6 +46,8 @@ export const saveFile = async (filename, buffer) => {
   try {
     fs.access(loc, (err) => {
       if (err) fs.mkdirSync(loc)
+      fs.chmodSync(loc, 0o755);
+      console.log('------ here ------');
       // fs.writeFile(`${loc}/${filename}`, buffer, function (err) {
       //   if (err) throw err;
       //   console.log(`${filename} saved.`);
@@ -54,9 +56,8 @@ export const saveFile = async (filename, buffer) => {
     await sharp(buffer)
       .webp({ quality: 80 })
       .resize(600)
-      .toFile(`./public/${filename}`, (err, info) => {
+      .toFile(`${loc}/${filename}`, (err, info) => {
         if (err) throw err;
-        console.log(info);
         console.log(`${filename} saved.`);
       });
   } catch (error) {
