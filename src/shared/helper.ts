@@ -47,7 +47,7 @@ export const saveFile = async (filename, buffer) => {
     fs.access(loc, (err) => {
       if (err) fs.mkdirSync(loc)
     });
-    sharp(buffer)
+    await sharp(buffer)
       .webp({ quality: 80 })
       .resize(600)
       .toBuffer().then((data) => {
